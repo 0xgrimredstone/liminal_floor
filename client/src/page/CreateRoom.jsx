@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import styles from '../styles';
 import { useGlobalContext } from '../context';
 import { CustomButton, PageHOC, GameLoad } from '../components';
 
@@ -39,7 +38,7 @@ const CreateRoom = () => {
     console.log("created room "+temp_code);
     
     try {
-      await contract.createBattle(temp_code,{gasLimit:200000});
+      await contract.createGame(temp_code,{gasLimit:200000});
 
       setWaitRoom(true);
     } catch (error) {
@@ -59,9 +58,6 @@ const CreateRoom = () => {
           handleClick={handleClick}
         />
       </div>
-      <p className={styles.infoText} onClick={() => navigate('/join-room')}>
-        Or join already existing rooms
-      </p>
     </>
   );
 };

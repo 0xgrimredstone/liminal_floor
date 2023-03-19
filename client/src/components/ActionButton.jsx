@@ -1,13 +1,12 @@
-import React from 'react';
-
 import styles from '../styles';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-const ActionButton = ({ imgUrl, handleClick, restStyles }) => (
+const ActionButton = ({ imgUrl, text, handleClick, restStyles }) => (
   <div
     className={`${styles.gameMoveBox} ${styles.flexCenter} ${styles.glassEffect} ${restStyles} `}
     onClick={handleClick}
   >
-    <img src={imgUrl} alt="action_img" className={styles.gameMoveIcon} />
+    <FontAwesomeIcon icon={imgUrl} className={`text-white`}/>
   </div>
 );
 

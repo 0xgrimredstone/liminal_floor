@@ -85,6 +85,7 @@ export const GlobalContextProvider = ({children})=> {
   //* Activate event listeners for the smart contract
   useEffect(() => {
     if (contract) {
+      console.log(contract);
       createEventListeners({
         navigate,contract,provider,
         walletAddress,setShowAlert,
@@ -98,7 +99,8 @@ export const GlobalContextProvider = ({children})=> {
   useEffect(() => {
     const fetchGameData = async () => {
       if (contract && walletAddress) {
-        const fetchedRooms = await contract.getAllBattles();
+        const fetchedRooms = await contract.getAllGames();
+        console.log(fetchedRooms);
         const pendingRooms = fetchedRooms.filter((room) => room.battleStatus === 0);
         let activeRoom = null;
 
