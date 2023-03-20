@@ -1,4 +1,4 @@
 import contract from './LiminalFloor.json';
 
-export const ADDRESS = '0x286a5c03b9F6e8fE94ea632c18675c2eBE971f4D'
+export const ADDRESS = '0x726e0Af21ed99b16E82F1f225fD3FE04Eb31Cef9'
 export const { abi: ABI } = contract;

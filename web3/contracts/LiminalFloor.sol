@@ -51,7 +51,7 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
         address player; /// @param players address  representing player in this game
         uint8[2] currentCoord; /// @param currentCoord uint array representing players' coordinates
         uint8 depth; /// @param depth how far in the player is in the game
-        uint8[][] gameMap; /// @param map the whole gameMap
+        uint8[5][5] gameMap; /// @param map the whole gameMap
         bool win; /// @param win whether player won
         bool move; /// @param move whether player moved this round
     }
@@ -128,7 +128,7 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
     event NewGame(string gameName, address indexed player);
     event RoundEnded();
     event GameEnded(string gameName, bool win);
-    event GameProgress(string indexed gameName);
+    event GameMove(string indexed gameName);
     event NewGameToken(address indexed owner, uint256 id);
 
     /// @dev Initializes the contract by setting a `metadataURI` to the token collection
@@ -152,8 +152,14 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
                 "",
                 address(0),
                 [0, 1],
-                bytes32(0),
-                [[0, 0, 0]],
+                uint8(0),
+                [
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0]
+                ],
                 false,
                 false
             )
@@ -228,7 +234,13 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
             msg.sender, // player addresses; player 2 empty until they joins game
             [0, 1], // current coordinate
             0, // depth count
-            [[1, 1, 1], [1, 1, 1], [2, 0, 3]], // TODO: gameMap
+            [
+                [1, 1, 1, 0, 0],
+                [1, 1, 1, 0, 0],
+                [2, 0, 3, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0]
+            ], // TODO: gameMap
             false, // win bool, default false
             false // move bool, default false
         );
@@ -259,17 +271,20 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
     // Read game map
     function checkInBound(
         string memory _gameName,
-        uint8[2] _toCheck
+        int8[2] memory _toCheck
     ) public view returns (bool) {
         Game memory _game = getGame(_gameName);
 
-        map = _game.gameMap;
-        cord = _game.currentCoord;
+        uint8[5][5] memory map = _game.gameMap;
+        uint8[2] memory coord = _game.currentCoord;
 
-        if (map.length >= coord[0] + _toCheck[0]) {
-            if (map[0].length >= coord[1] + _toCheck[1]) {
-                if (map[coord[0] + _toCheck[0]][coord[1] + _toCheck[1]] != 0)
-                    return true;
+        if (5 > uint8(int8(coord[0]) + _toCheck[0])) {
+            if (5 > uint8(int8(coord[1]) + _toCheck[1])) {
+                if (
+                    map[uint8(int8(coord[0]) + _toCheck[0])][
+                        uint8(int8(coord[1]) + _toCheck[1])
+                    ] != 0
+                ) return true;
             }
         } else return false;
     }
@@ -277,32 +292,32 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
     // Read game map
     function getCurrentCoord(
         string memory _gameName
-    ) public view returns (uint8[] coord) {
+    ) public view returns (uint8[2] memory coord) {
         Game memory _game = getGame(_gameName);
-
-        cord = _game.currentCoord;
-
-        return coord;
+        return _game.currentCoord;
     }
 
     // Read game map
     function setCurrentCoord(
         string memory _gameName,
-        uint8[2] _toCheck
-    ) public view returns (uint8[] coord) {
+        int8[2] memory _toCheck
+    ) public view returns (uint8[2] memory coord) {
         Game memory _game = getGame(_gameName);
 
-        coord = _game.currentCoord;
+        uint8[2] memory c = _game.currentCoord;
         if (checkInBound(_gameName, _toCheck)) {
-            return [coord[0] + _toCheck[0], coord[1] + _toCheck[1]];
+            return [
+                uint8(int8(c[0]) + _toCheck[0]),
+                uint8(int8(c[1]) + _toCheck[1])
+            ];
         }
-        return coord;
+        return c;
     }
 
-    function incDepth() public view returns (bool) {
+    function incDepth(string memory _gameName) public view returns (bool) {
         Game memory _game = getGame(_gameName);
         _game.depth++;
-        _game.moves = true;
+        _game.move = true;
         return true;
     }
 
@@ -317,15 +332,19 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
         require(
             checkInBound(
                 _gameName,
-                choice == 1 ? [1, 0] : _choice == 2 ? [0, 1] : [0, -1]
+                _choice == 1 ? [int8(1), int8(0)] : _choice == 2
+                    ? [int8(0), int8(1)]
+                    : [int8(0), int8(-1)]
             ),
             "Tile out of bounds or unavailable!"
         );
         setCurrentCoord(
             _gameName,
-            choice == 1 ? [1, 0] : _choice == 2 ? [0, 1] : [0, -1]
+            _choice == 1 ? [int8(1), int8(0)] : _choice == 2
+                ? [int8(0), int8(1)]
+                : [int8(0), int8(-1)]
         );
-        incDepth();
+        incDepth(_gameName);
     }
 
     // User chooses attack or defense move for game card
@@ -339,8 +358,8 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
 
         _registerPlayerMove(_choice, _gameName);
         _game = getGame(_gameName);
-        emit GameProgress(_gameName);
-        _resolveGame(_gameName);
+        emit GameMove(_gameName);
+        _resolveGame(_game);
     }
 
     struct P {
@@ -352,17 +371,7 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
     /// @dev Resolve game function to determine winner and loser of game
     /// @param _game game; game to resolve
     function _resolveGame(Game memory _game) internal {
-        P memory p1 = P(
-            playerInfo[_game.players[0]],
-            _game.move,
-            getPlayer(_game.players[0]).playerHealth,
-            getPlayerToken(_game.players[0]).attackStrength,
-            getPlayerToken(_game.players[0]).defenseStrength
-        );
-
-        address[2] memory _damagedPlayers = [address(0), address(0)];
-
-        uint8 loc = _game.map[_game.currentCoord[0]][_game.currentCoord[1]];
+        uint8 loc = _game.gameMap[_game.currentCoord[0]][_game.currentCoord[1]];
         if (loc == 2 || loc == 3) {
             // LOSE || WIN
             _endGame(loc, _game);
@@ -379,7 +388,7 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
 
     function quitGame(string memory _gameName) public {
         Game memory _game = getGame(_gameName);
-        require(_game.players == msg.sender, "You are not in this game!");
+        require(_game.player == msg.sender, "You are not in this game!");
 
         _endGame(2, _game);
     }
