@@ -58,7 +58,7 @@ export const createEventListeners = (
     }
   } );
 
-  const MoveEventFilter = contract.filters.GameProgress();
+  const MoveEventFilter = contract.filters.GameMove();
   AddNewEvent( MoveEventFilter, provider, ( { args } ) => {
     console.log( 'Move initiated!', args );
   } );
@@ -67,7 +67,7 @@ export const createEventListeners = (
   AddNewEvent( RoundEndedEventFilter, provider, ( { args } ) => {
     console.log( 'Round ended!', args, walletAddress );
 
-    playAudio( defenseSound );
+    // playAudio( defenseSound );
 
     setUpdateGameData( ( prevUpdateGameData ) => prevUpdateGameData + 1 );
   } );
@@ -77,7 +77,7 @@ export const createEventListeners = (
   AddNewEvent( BattleEndedEventFilter, provider, ( { args } ) => {
     if ( args.type == 3 ) {
       setShowAlert( { status: true, type: 'success', message: 'You won!' } );
-    } else if ( walletAddress.toLowerCase() === args.loser.toLowerCase() ) {
+    } else {
       setShowAlert( { status: true, type: 'failure', message: 'You lost!' } );
     }
 

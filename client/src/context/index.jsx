@@ -14,7 +14,7 @@ export const GlobalContextProvider = ({children})=> {
   const [contract, setContract] = useState('');
   const [showAlert, setShowAlert] = useState({ status: false, type: 'info', message: '' });
   const [roomCode, setRoomCode] = useState('');
-  const [gameData, setGameData] = useState({ players: [], pendingRooms: [], activeRoom: null });
+  const [gameData, setGameData] = useState({ player: "0x00", pendingRooms: [], activeRoom: null });
   const [updateGameData, setUpdateGameData] = useState(0);
   const [level, setLevel] = useState('bg-astral');
   const [errorMessage, setErrorMessage] = useState('');
@@ -100,21 +100,19 @@ export const GlobalContextProvider = ({children})=> {
     const fetchGameData = async () => {
       if (contract && walletAddress) {
         const fetchedRooms = await contract.getAllGames();
-        console.log(fetchedRooms);
-        const pendingRooms = fetchedRooms.filter((room) => room.battleStatus === 0);
+        const pendingRooms = fetchedRooms.filter((room) => room.GameStatus === 0);
         let activeRoom = null;
 
         fetchedRooms.forEach((room) => {
-          if (room.players.find((player) => player.toLowerCase() === walletAddress.toLowerCase())) {
-            if (room.winner.startsWith('0x00')) {
+          if (room.player.toLowerCase() === walletAddress.toLowerCase()) {
+            // if (room.GameStatus === 1) {
               activeRoom = room;
-            }
+              setGameData({ pendingRooms: pendingRooms.slice(1), activeRoom });
+              setRoomCode(activeRoom.code)
+              console.log("activeRoom: "+activeRoom.code+" fetched rooms:")
+            // }
           }
         });
-
-        setGameData({ pendingRooms: pendingRooms.slice(1), activeRoom });
-        setRoomCode(activeRoom.name)
-        console.log("activeRoom: "+activeRoom.name+" fetched rooms:")
         console.log(fetchedRooms);
       }
     };
@@ -164,7 +162,6 @@ export const GlobalContextProvider = ({children})=> {
           gameData, 
           level, setLevel,
           setErrorMessage,
-          player1Ref, player2Ref,
           updateCurrentWalletAddress
 
         }}>

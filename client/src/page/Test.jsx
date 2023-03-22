@@ -8,7 +8,7 @@ import { useGlobalContext } from '../context';
 import { playAudio } from '../utils/animation.js';
 
 
-import { ActionButton, Alert, GameInfo } from '../components';
+import { ActionButton, Alert, GameInfo, FadeIn } from '../components';
 import { attack, attackSound, defense, defenseSound, player01 as player01Icon } from '../assets';
 import { faChevronRight, faChevronLeft, faChevronUp } from '@fortawesome/free-solid-svg-icons'
 
@@ -16,40 +16,58 @@ import { faChevronRight, faChevronLeft, faChevronUp } from '@fortawesome/free-so
 const Test = () => {
   const { contract, gameData, walletAddress, showAlert, setShowAlert, level, setErrorMessage, playerRef, } = useGlobalContext();
   const [player, setPlayer] = useState({}); 
+  const [isFullyRendered, setFullyRendered] = useState(false);
+  const [buttonStyles, setButtonStyles] = useState(["mx-10 bg-white dark:bg-white", "mr-10 bg-white dark:bg-white", "ml-10 bg-white dark:bg-white"]);
+  const [buttonAvailable, setButtonAvailable] = useState([false, false, false]);
   const { name } = useParams();//battle/Name
   const navigate = useNavigate();
+
+  const refreshButtonStyles = () => {
+    let t = ["mx-10 bg-white dark:bg-white", "mr-10 bg-white dark:bg-white", "ml-10 bg-white dark:bg-white"];
+    let y = [false, false, false];
+    let c = gameData.activeRoom.currentCoord;
+
+    if (c[0] + 1 <= 5){
+      if(gameData.activeRoom.gameMap[c[0]+1][c[1]] != 0) {
+        t[0] = "mx-10 hover:border-red-400";
+        y[0] = true;
+      }
+    }
+    if (c[1] + 1 <= 5){
+      if(gameData.activeRoom.gameMap[c[0]][c[1]+1] != 0) {
+        t[1] = "mr-10 hover:border-red-400";
+        y[1] = true;
+      }
+    }
+    if (c[1] - 1 >= 0){
+      if(gameData.activeRoom.gameMap[c[0]][c[1]-1] != 0) {
+        t[2] = "ml-10 hover:border-red-400";
+        y[2] = true;
+      }
+    }
+    setButtonStyles(t);
+    setButtonAvailable(y);
+  }
 
   useEffect(() => {
     const getPlayerInfo = async () => {
       try {
         // save players locally
         let player01Address = null;
-        let player02Address = null;
 
-        if (gameData.activeRoom.players[0].toLowerCase() === walletAddress.toLowerCase()) {
-          player01Address = gameData.activeRoom.players[0];
-          player02Address = gameData.activeRoom.players[1];
-        } else {
-          player01Address = gameData.activeRoom.players[1];
-          player02Address = gameData.activeRoom.players[0];
+        if (gameData.activeRoom.player.toLowerCase() === walletAddress.toLowerCase()) {
+          player01Address = gameData.activeRoom.player;
         }
 
         // fetch player data
         const p1TokenData = await contract.getPlayerToken(player01Address);
         const player01 = await contract.getPlayer(player01Address);
-        const player02 = await contract.getPlayer(player02Address);
-
-        // specify each element
-        const p1Att = p1TokenData.attackStrength.toNumber();
-        const p1Def = p1TokenData.defenseStrength.toNumber();
-        const p1H = player01.playerHealth.toNumber();
-        const p1M = player01.playerMana.toNumber();
-        const p2H = player02.playerHealth.toNumber();
-        const p2M = player02.playerMana.toNumber();
 
         // set state
-        setplayer({ ...player01, att: p1Att, def: p1Def, health: p1H, mana: p1M });
-        setPlayer2({ ...player02, att: '?', def: '?', health: p2H, mana: p2M });
+        setPlayer({ ...player01, Token: p1TokenData });
+        console.log(player);
+        refreshButtonStyles();
+        setFullyRendered(true);
       } catch (error) {
         setErrorMessage(error.message);
       }
@@ -57,54 +75,65 @@ const Test = () => {
 
     if (contract && gameData.activeRoom) getPlayerInfo();
   }, [contract, walletAddress, gameData, name]);
-
-  const makeAMove = async (choice) => {
-    playAudio(choice === 1 ? attackSound : defenseSound);
-    try {
-      console.log(gameData.activeRoom);
-      await contract.GameProgress(choice, name, { gasLimit: 200000 });
   
+  const makeAMove = async (choice) => {
+    // playAudio(choice === 1 ? attackSound : defenseSound);
+    if(!buttonAvailable[choice]) {
+      console.log("unavailable");
+      return;
+    }
+    try {
+      setFullyRendered(false)
+      console.log(gameData.activeRoom);
+      await contract.GameProgress(choice, name, { gasLimit: 500000 });
+
+
       setShowAlert({
         status: true,
         type: 'info',
         message: `Going ${choice === 1 ? 'forward' : choice === 2 ? 'left' : 'right'}`,
       });
+      refreshButtonStyles();
+      setFullyRendered(true);
     } catch (error) {
       // console.log(error);
       setErrorMessage(error);
     }
   }
+
   return (
     <section className={`${styles.flexBetween} ${styles.gameContainer} relative w-full h-screen mx-auto bg-black`}>
-      <HotelCanvas />
+      <FadeIn show={isFullyRendered}>
+        <HotelCanvas />
+      </FadeIn>
       <div className={`${styles.flexCenter} flex-col mb-20`}>
       <div className="flex items-center flex-row">
       <ActionButton
           imgUrl={faChevronUp}
           handleClick={() => makeAMove(1)}
-          restStyles="mx-2 hover:border-red-400"
+          restStyles={buttonStyles[0]}
         />
       </div>
       <div className="flex items-center flex-row">
         <ActionButton
           imgUrl={faChevronLeft}
           handleClick={() => makeAMove(2)}
-          restStyles="mr-10 hover:border-red-400"
+          restStyles={buttonStyles[1]}
         />
          
         <ActionButton
           imgUrl={faChevronRight}
           handleClick={() => makeAMove(3)}
-          restStyles="ml-10 hover:border-red-400"
+          restStyles={buttonStyles[2]}
         />
       </div>
       <div>
         <div
           data-for={`Depth`}
-          data-tip="Depth"
+          data-tip="How far in you are"
           className={`${styles.gameMoveBox} ${styles.flexCenter} ${styles.glassEffect} ${styles.playerMana} cursor-default`}
         >
-          {player.mana || 0}
+          {gameData?.activeRoom?.depth}
         </div>
       </div>
       </div>

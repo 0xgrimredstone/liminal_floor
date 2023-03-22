@@ -14,8 +14,21 @@ const GameLoad = () => {
   - quit room function
   ///////////*/
 
-  const { walletAddress, gameData, roomCode } = useGlobalContext();
+  const { walletAddress, gameData, roomCode, setErrorMessage, contract } = useGlobalContext();
   const navigate = useNavigate();
+
+  const handleClick = async () => {
+    try {
+      if (roomCode) {
+        await contract.startGame(roomCode,{gasLimit:500000})
+        console.log("clik");
+        navigate(`/room/${roomCode}`);
+      }; 
+    } catch (error) {
+      setErrorMessage(error);
+      console.log(error);
+    }
+  };
 
   return (
     <div className={`${styles.flexBetween} ${styles.gameLoadContainer}`}>
@@ -54,7 +67,7 @@ const GameLoad = () => {
         <div className="mt-10">
           <CustomButton
             title="Start Game"
-            handleClick={() => navigate(`/room/${roomCode}`)}
+            handleClick={handleClick}
             restStyles="mx-3"
           />
           <CustomButton

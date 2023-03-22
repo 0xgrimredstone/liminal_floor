@@ -5,7 +5,7 @@ import CanvasLoader from "../Loader";
 import gsap from "gsap";
 
 const Hotel = ({ isMobile }) => {
-  const hotelModel = useGLTF("./hotel/scene.gltf");
+  const hotelModel = useGLTF("../hotel/scene.gltf");
 
   return (
     <mesh>
