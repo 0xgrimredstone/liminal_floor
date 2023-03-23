@@ -5,5 +5,7 @@ import Room from './Room';
 import Levels from './Levels';
 import DevNotes from './DevNotes';
 import Test from './Test';
+import GameOver from './GameOver';
 
-export { Home, CreateRoom, JoinRoom, Room, Levels, DevNotes, Test }
+export { Home, CreateRoom, JoinRoom, Room, Levels, DevNotes, Test, GameOver }
+

@@ -19,9 +19,9 @@ const GameLoad = () => {
 
   const handleClick = async () => {
     try {
-      if (roomCode) {
+      if (roomCode != undefined) {
         await contract.startGame(roomCode,{gasLimit:500000})
-        console.log("clik");
+        console.log("WHY IS IT UNDEFINED "+roomCode)
         navigate(`/room/${roomCode}`);
       }; 
     } catch (error) {
@@ -58,10 +58,10 @@ const GameLoad = () => {
               {walletAddress.slice(0, 10)}...
             </p>
           </div>
-          <div className={`${styles.flexCenter} ml-10 flex-col`}>
+          {/* <div className={`${styles.flexCenter} ml-10 flex-col`}>
             <img src={player02} className={styles.gameLoadPlayerImg} />
             <p className={styles.gameLoadPlayerText}>...</p>
-          </div>
+          </div> */}
         </div>
 
         <div className="mt-10">

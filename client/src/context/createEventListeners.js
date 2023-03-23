@@ -36,7 +36,7 @@ export const createEventListeners = (
   AddNewEvent( NewRoomEventFilter, provider, ( { args } ) => {
     console.log( 'New Level started!', args, walletAddress );
 
-    if ( walletAddress.toLowerCase() === args.player.toLowerCase() ) {
+    if ( walletAddress.toLowerCase() === args.player1.toLowerCase() || walletAddress.toLowerCase() === args.player2.toLowerCase() ) {
       navigate( `/room/${args.name}` );
     }
 
@@ -77,10 +77,9 @@ export const createEventListeners = (
   AddNewEvent( BattleEndedEventFilter, provider, ( { args } ) => {
     if ( args.type == 3 ) {
       setShowAlert( { status: true, type: 'success', message: 'You won!' } );
-    } else {
+    } else if ( walletAddress.toLowerCase() === args.loser.toLowerCase() ) {
       setShowAlert( { status: true, type: 'failure', message: 'You lost!' } );
+      navigate( '/lost' );
     }
-
-    setTimeout( () => navigate( '/create-room' ), 3000 )
   } );
 };

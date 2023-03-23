@@ -8,9 +8,12 @@ const DevNotes = () => {
   
   return (
     <div>
-        <h3 className={styles.joinHeadText}>Why does the wallet modal appear so frequently?</h3>
-        <p className={styles.normalText}>If this is happening you're probably using the Brave Browser. <br/> Brave automatically asks for your permission to connect even if you've already connected before. <br/> If you find this annoying while playing, I suggest to switch to Chrome.</p>
-        
+        <h3 className={styles.joinHeadText}>What's Liminal Floor?</h3>
+        <p className={styles.normalText}>Liminal Floor started out as a <a href="https://opensea.io/collection/liminal-floor" styles={styles.infoText}>puzzle collection</a> investigating how fear can be created in under 64 voxels <br/>Realising that the NFT gaming space still has much to develop, I decided to develop the collection into an immersive experience to further investigate how to play with fear</p>
+        <br/>
+        <h3 className={styles.joinHeadText}>How to play?</h3>
+        <p className={styles.normalText}>1. Register your wallet as a player<br/>2. Select a level<br/>3. If you're bringing friends, share the room code with them<br/>4. Find your way out</p>
+
     </div>
   )
 };

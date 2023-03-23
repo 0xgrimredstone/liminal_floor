@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
-import {Home, CreateRoom, DevNotes, Levels, Test} from './page';
+import {Home, CreateRoom, DevNotes, Levels, Test, GameOver} from './page';
 import { OnboardModal } from './components';
 import { GlobalContextProvider } from './context';
 import './index.css';
@@ -17,6 +17,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <Route path="/room/:name" element={<Test />} />
       <Route path="/levels" element={<Levels />} />
       <Route path="/dev" element={<DevNotes />} />
+      <Route path="/lost" element={<GameOver type={0} />} />
+      <Route path="/won" element={<GameOver type={1} />} />
     </Routes>
   </GlobalContextProvider>
   </BrowserRouter>,

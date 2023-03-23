@@ -25,7 +25,7 @@ const CreateRoom = () => {
     console.log("gameData update found in create room");
     console.log(gameData?.activeRoom);
     if (gameData?.activeRoom?.GameStatus === 1) {
-      navigate(`/room/${gameData.activeRoom.name}`);
+      navigate(`/room/${gameData.activeRoom.code}`);
     }
     else if (gameData?.activeRoom?.GameStatus === 0) {
       setWaitRoom(true);
