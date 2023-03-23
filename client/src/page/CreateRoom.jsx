@@ -44,6 +44,7 @@ const CreateRoom = () => {
       console.log(gameData);
       const fetchedRooms = await contract.getAllGames();
       console.log(fetchedRooms);
+
     } catch (error) {
       setErrorMessage(error);
     }

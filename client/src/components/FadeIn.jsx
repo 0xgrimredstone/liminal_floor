@@ -12,7 +12,9 @@ const FadeIn = ({show, duration, children}) => {
   });
   return (
     <animated.div style={props}>
-      {children}
+      <div style={{width:"75vw", height:"75vh"}}>
+        {children}
+      </div>
     </animated.div>
   )
 }

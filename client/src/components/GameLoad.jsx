@@ -21,8 +21,6 @@ const GameLoad = () => {
     try {
       if (roomCode != undefined) {
         await contract.startGame(roomCode,{gasLimit:500000})
-        console.log("WHY IS IT UNDEFINED "+roomCode)
-        navigate(`/room/${roomCode}`);
       }; 
     } catch (error) {
       setErrorMessage(error);

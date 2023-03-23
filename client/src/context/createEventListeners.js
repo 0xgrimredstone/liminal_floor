@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 
 import { ABI } from '../contract';
 import { playAudio, sparcle } from '../utils/animation.js';
-import { defenseSound } from '../assets';
+import { footstep } from '../assets';
 
 const AddNewEvent = ( eventFilter, provider, cb ) => {
   provider.removeListener( eventFilter );
@@ -36,8 +36,8 @@ export const createEventListeners = (
   AddNewEvent( NewRoomEventFilter, provider, ( { args } ) => {
     console.log( 'New Level started!', args, walletAddress );
 
-    if ( walletAddress.toLowerCase() === args.player1.toLowerCase() || walletAddress.toLowerCase() === args.player2.toLowerCase() ) {
-      navigate( `/room/${args.name}` );
+    if ( walletAddress.toLowerCase() === args.player.toLowerCase() ) {
+      navigate( `/room/${args.gameName}` );
     }
 
     setUpdateGameData( ( prevUpdateGameData ) => prevUpdateGameData + 1 );
@@ -67,17 +67,17 @@ export const createEventListeners = (
   AddNewEvent( RoundEndedEventFilter, provider, ( { args } ) => {
     console.log( 'Round ended!', args, walletAddress );
 
-    // playAudio( defenseSound );
-
     setUpdateGameData( ( prevUpdateGameData ) => prevUpdateGameData + 1 );
   } );
 
   // Battle Ended event listener
   const BattleEndedEventFilter = contract.filters.GameEnded();
   AddNewEvent( BattleEndedEventFilter, provider, ( { args } ) => {
-    if ( args.type == 3 ) {
+    if ( args.win ) {
       setShowAlert( { status: true, type: 'success', message: 'You won!' } );
-    } else if ( walletAddress.toLowerCase() === args.loser.toLowerCase() ) {
+      navigate( '/won' );
+    } else {
+      console.log( args );
       setShowAlert( { status: true, type: 'failure', message: 'You lost!' } );
       navigate( '/lost' );
     }

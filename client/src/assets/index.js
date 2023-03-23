@@ -55,6 +55,7 @@ import player02 from './player02.png';
 import attackSound from './sounds/attack.wav';
 import defenseSound from './sounds/defense.mp3';
 import explosion from './sounds/explosion.mp3';
+import footstep from './sounds/footstep.mp3';
 
 export const allCards = [
   ace,
@@ -141,6 +142,7 @@ export {
   attackSound,
   defenseSound,
   explosion,
+  footstep
 };
 
 export const battlegrounds = [
