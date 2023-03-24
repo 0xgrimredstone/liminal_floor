@@ -23,7 +23,7 @@ const CreateRoom = () => {
 
   useEffect(() => {
     console.log("gameData update found in create room");
-    console.log(gameData?.activeRoom);
+    console.log(gameData?.pendingRoom);
     if (gameData?.activeRoom?.GameStatus === 1) {
       navigate(`/room/${gameData.activeRoom.code}`);
     }
@@ -68,6 +68,6 @@ const CreateRoom = () => {
 export default 
 PageHOC(
   CreateRoom,
-  <>Start<br/>a level</>, 
-  <>Step into the unknown</>
+  <>Step into the unknown</>, 
+  <>Start a level</>
 );

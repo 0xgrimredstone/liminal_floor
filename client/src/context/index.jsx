@@ -105,15 +105,14 @@ export const GlobalContextProvider = ({children})=> {
 
         fetchedRooms.forEach((room) => {
           if (room.player.toLowerCase() === walletAddress.toLowerCase()) {
-            if (room.GameStatus === 1) {
+            if (room.GameStatus === 1 || room.GameStatus === 0) {
               activeRoom = room;
-              setGameData({ pendingRooms: pendingRooms.slice(1), activeRoom });
               setRoomCode(activeRoom.code)
               console.log("activeRoom: "+activeRoom.code+" fetched rooms:")
             }
           }
         });
-        console.log(fetchedRooms);
+        setGameData({ pendingRooms: pendingRooms.slice(1), activeRoom });
       }
     };
 

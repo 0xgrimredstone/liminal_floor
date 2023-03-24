@@ -1,4 +1,3 @@
-import Card from './Card';
 import Alert from './Alert';
 import PageHOC from './PageHOC';
 import GameInfo from './GameInfo';
@@ -11,7 +10,6 @@ import OnboardModal from './OnboardModal';
 import FadeIn from './FadeIn';
 
 export {
-    Card,
     Alert,
     PageHOC,
     GameInfo,

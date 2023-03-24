@@ -17,7 +17,7 @@ const GameOver = ({type}) => {
   },[])
 
   return ( 
-    <section className={`${styles.flexBetween} ${styles.gameContainer} relative w-full h-screen mx-auto bg-black`}>
+    <section className={`${styles.flexBetween} ${styles.gameContainer} relative w-full h-screen mx-auto bg-siteblack`}>
        <FadeIn show={isFullyRendered} duration={300}>
           <div style={{width:"75vw", height:"75vh"}}>
             {type == 0 ? <GameOverCanvas /> : <WinCanvas/>}

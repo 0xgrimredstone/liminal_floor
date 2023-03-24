@@ -1,7 +1,6 @@
 import { ethers } from 'ethers';
 
 import { ABI } from '../contract';
-import { playAudio, sparcle } from '../utils/animation.js';
 import { footstep } from '../assets';
 
 const AddNewEvent = ( eventFilter, provider, cb ) => {
@@ -74,11 +73,9 @@ export const createEventListeners = (
   const BattleEndedEventFilter = contract.filters.GameEnded();
   AddNewEvent( BattleEndedEventFilter, provider, ( { args } ) => {
     if ( args.win ) {
-      setShowAlert( { status: true, type: 'success', message: 'You won!' } );
       navigate( '/won' );
     } else {
       console.log( args );
-      setShowAlert( { status: true, type: 'failure', message: 'You lost!' } );
       navigate( '/lost' );
     }
   } );
