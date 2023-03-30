@@ -1,5 +1,6 @@
 import React from 'react'
 import {useSpring, animated} from "react-spring"
+import { fadeIn, zoomIn } from '../utils/motion.js';
 
 const FadeIn = ({show, duration, children}) => {
   const props = useSpring({

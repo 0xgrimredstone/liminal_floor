@@ -15,7 +15,8 @@ const GameInfo = () => {
     const roomCode = gameData.activeRoom.name;
 
     try {
-      await contract.quitGame(roomCode,{gasLimit:500000});
+      console.log("ho");
+      await contract.quitGame(roomCode,{gasLimit:500000});  // TODO: ERROR
 
       setShowAlert({ status: true, type: 'info', message: `You're quitting the room ${roomCode}` });
     } catch (error) {

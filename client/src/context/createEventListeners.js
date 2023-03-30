@@ -1,7 +1,8 @@
 import { ethers } from 'ethers';
 
 import { ABI } from '../contract';
-import { footstep } from '../assets';
+import { lose, win } from '../assets';
+import { playAudio } from '../utils/animation';
 
 const AddNewEvent = ( eventFilter, provider, cb ) => {
   provider.removeListener( eventFilter );
@@ -74,9 +75,11 @@ export const createEventListeners = (
   AddNewEvent( BattleEndedEventFilter, provider, ( { args } ) => {
     if ( args.win ) {
       navigate( '/won' );
+      playAudio( win, false ).play();
     } else {
       console.log( args );
       navigate( '/lost' );
+      playAudio( lose, false ).play();
     }
   } );
 };

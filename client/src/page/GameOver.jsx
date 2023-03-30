@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 import styles from "../styles";
 import {GameOverCanvas, WinCanvas} from "../components/models";
-import { useGlobalContext } from '../context';
 import { CustomButton, FadeIn } from '../components';
 
 const GameOver = ({type}) => {
@@ -25,7 +24,7 @@ const GameOver = ({type}) => {
               <h3 className={styles.headText}>YOU {type == 0 ? " LOST" : " WON"} </h3>
               <CustomButton
                 title="Back to home"
-                handleClick={() => navigate('/create-room')}
+                handleClick={() => navigate('/')}
                 restStyles="mt-6"
               />
             </div>

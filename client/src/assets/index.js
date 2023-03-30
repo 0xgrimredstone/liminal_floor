@@ -22,6 +22,9 @@ import attackSound from './sounds/attack.wav';
 import defenseSound from './sounds/defense.mp3';
 import explosion from './sounds/explosion.mp3';
 import footstep from './sounds/footstep.mp3';
+import bgm from './sounds/bgm.mp3';
+import lose from './sounds/lose.wav';
+import win from './sounds/win.wav';
 
 
 export {
@@ -43,7 +46,10 @@ export {
   attackSound,
   defenseSound,
   explosion,
-  footstep
+  footstep,
+  bgm,
+  lose,
+  win
 };
 
 export const battlegrounds = [

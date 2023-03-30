@@ -1,28 +1,30 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Preload, useGLTF } from "@react-three/drei";
+import {  Preload, useGLTF } from "@react-three/drei";
 import CanvasLoader from "../Loader";
-import gsap from "gsap";
+import CameraOrbitController from "../CameraOrbitController";
 
 const Hotel = ({ isMobile }) => {
   const hotelModel = useGLTF("../hotel/scene.gltf");
-
   return (
     <mesh>
       <hemisphereLight intensity={0.15} groundColor='black' />
       <pointLight intensity={0.1} />
       <primitive
         object={hotelModel.scene}
-        scale={isMobile ? 0.4 : 0.5}
-        position={isMobile ? [0, -3, -2.2] : [0, -0.25, -1.5]}
-        rotation={[0, -3.15, 0]}
+        scale={isMobile ? 0.4 : 0.6}
+        position={isMobile ? [0, -3, -2.2] : [0, -0.25, 0.25]}
+        rotation={[0,91.1,0]}
       />
     </mesh>
   );
 };
 
-const HotelCanvas = ({cameraPos}) => {
+const HotelCanvas = ({ready, choice}) => {
   const [isMobile, setIsMobile] = useState(false);
+  const [zoom, setZoom] = useState(false);
+  const [focus, setFocus] = useState({});
+  // const [rotation, setRotation] = useState({});
 
   useEffect(() => {
     // Add a listener for changes to the screen size
@@ -45,26 +47,42 @@ const HotelCanvas = ({cameraPos}) => {
     };
   }, []);
 
-  return (
-        <Canvas
-          frameloop='demand'
-          shadows
-          dpr={[1, 2]}
-          camera={{ position: [0,0,0], fov: 25 }}
-          gl={{ preserveDrawingBuffer: true }}
-        >
-          <Suspense fallback={<CanvasLoader/>}>
-            <OrbitControls
-              enableZoom={true}
-              maxPolarAngle={Math.PI / 2}
-              minPolarAngle={Math.PI / 2}
-            />
-            <Hotel isMobile={isMobile} />
-          </Suspense>
+  useEffect(() => {
+    if(ready){
+      setZoom(true);
+      setFocus({x:0, y:0, z:0.5});
+      // setRotation({x:0, y:0, z:0});
+    }
+    else setZoom(false);
+  }, [ready]);
 
-          <Preload all />
-        </Canvas>
+  useEffect(() => {
+    if (choice > 0) {
+      setZoom(true);
+      setFocus({x:0, y:0, z:0});
+      setTimeout(() => { 
+        setZoom(false);
+        setFocus({x:0, y:0, z:0.5});
+      },2000);
+      // setRotation({x:0, y:0, z:0});
+    }
+    else if (ready){
+      setZoom(true);
+      setFocus({x:0, y:0, z:0.5});
+    }
+  }, [choice]);
+
+  return (
+    <Canvas>
+      <Suspense fallback={<CanvasLoader />}>
+        <CameraOrbitController zoom={zoom} focus={focus}/>
+        <Hotel isMobile={isMobile}/>
+      </Suspense>
+
+      <Preload all />
+    </Canvas>
   );
+  
 };
 
 export default HotelCanvas;

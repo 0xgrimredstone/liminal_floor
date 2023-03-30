@@ -2,7 +2,8 @@ import React, {createContext, useContext, useEffect, useRef, useState} from 'rea
 import {ethers} from 'ethers';
 import Web3Modal from 'web3modal';
 import {useNavigate} from 'react-router-dom';
-
+import { bgm } from '../assets';
+import { playAudio } from '../utils/animation';
 import { ABI, ADDRESS } from '../contract';
 import { createEventListeners } from './createEventListeners';
 import {GetParams} from '../utils/Onboard';
@@ -19,6 +20,8 @@ export const GlobalContextProvider = ({children})=> {
   const [level, setLevel] = useState('bg-astral');
   const [errorMessage, setErrorMessage] = useState('');
   const [step, setStep] = useState(1);
+
+  const BGM = playAudio(bgm,true);
    
   const player1Ref = useRef();
   const player2Ref = useRef();
@@ -62,6 +65,8 @@ export const GlobalContextProvider = ({children})=> {
   useEffect(() => {
     updateCurrentWalletAddress();   // seems to already make a popup- nice
     window?.ethereum?.on('accountsChanged', updateCurrentWalletAddress);
+    BGM.pause();
+    BGM.play();
   }, []);
 
   //* Set the smart contract and provider to the state
@@ -77,7 +82,6 @@ export const GlobalContextProvider = ({children})=> {
         setContract(newContract);
         console.log("initial provider and contract made and saved");
     };
-
     const timer = setTimeout(()=> setSmartContractAndProvider(), [1000]);
     return () => clearTimeout(timer);
   }, []);
@@ -152,7 +156,6 @@ export const GlobalContextProvider = ({children})=> {
     }
   }, [errorMessage]);
 
-
     return(
         <GlobalContext.Provider value={{
           contract, walletAddress,
@@ -164,6 +167,7 @@ export const GlobalContextProvider = ({children})=> {
           updateCurrentWalletAddress
 
         }}>
+            
             {children}
 
         </GlobalContext.Provider>

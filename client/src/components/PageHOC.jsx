@@ -1,5 +1,6 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { useNavigate } from 'react-router-dom';
+
 
 import Alert from './Alert';
 import { useGlobalContext } from '../context';
@@ -24,9 +25,6 @@ const PageHOC = (Component, title, desc) => () => {
             </div>
             <p className={styles.footerText}>ver 1.0.1 | <a className={styles.infoText} onClick={()=> navigate('/dev')}>Developer's Notes</a></p>
         </div>
-        {/* <div className="flex flex-1">
-            <img src={launchImg} alt="launch-img" className="w-full x1:h-full object-cover" />
-        </div> */}
     </div>
   );
 };

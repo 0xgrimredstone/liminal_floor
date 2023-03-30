@@ -1,9 +1,9 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import CustomButton from './CustomButton';
 import { useGlobalContext } from '../context';
-import { player01, player02 } from '../assets';
+import Loader2 from './Loader2';
 import styles from '../styles';
 
 const GameLoad = () => {
@@ -16,10 +16,12 @@ const GameLoad = () => {
 
   const { walletAddress, gameData, roomCode, setErrorMessage, contract } = useGlobalContext();
   const navigate = useNavigate();
+  const [starting, setStart] = useState(false);
 
   const handleStart = async () => {
     try {
       if (roomCode != undefined) {
+        setStart(true);
         await contract.startGame(roomCode,{gasLimit:500000})
       }; 
     } catch (error) {
@@ -30,6 +32,7 @@ const GameLoad = () => {
 
   const handleQuit = async () => {
     try {
+      setStart(true);
       await contract.quitGame(roomCode,{gasLimit:500000})
       console.log(gameData);
     } catch (error) {
@@ -44,7 +47,7 @@ const GameLoad = () => {
           title="Choose Level"
           handleClick={() => navigate('/battleground')}
           restStyles="mt-6"
-        />
+          />
       </div>
 
       <div className={`flex-1 ${styles.flexCenter} flex-col`}>
@@ -60,13 +63,14 @@ const GameLoad = () => {
             title="Start Game"
             handleClick={handleStart}
             restStyles="mx-3"
-          />
+            />
           <CustomButton
             title="Quit Game"
             handleClick={handleQuit}
             restStyles="mx-3"
-          />
+            />
         </div>
+        {starting && <Loader2/>}
       </div>
     </div>
   );
