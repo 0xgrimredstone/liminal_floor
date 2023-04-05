@@ -27,6 +27,9 @@ PageHOC(
 
     <a className={styles.infoText} href="https://twitter.com/0xgrimredstone">Made with 💛 by 0xgrimredstone</a>
     <br/>
-    <a className={styles.infoText} href="https://www.youtube.com/watch?v=C9ctoK4M9Bk">This project was made with the help of JS Mastery's youtube tutorial</a>
-    </>
+    <a className={styles.infoText} href="https://www.youtube.com/watch?v=C9ctoK4M9Bk">This project was made with the help of JS Mastery</a>
+    <br/>
+    <a className={styles.infoText} href="https://www.youtube.com/watch?v=Dn_lRGgTu5k">Background music by CO.AG Music</a>
+    
+  </>
 );
