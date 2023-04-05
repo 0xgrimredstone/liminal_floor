@@ -45,7 +45,7 @@ const Home = () => {
 
   useEffect(() => {
     if (gameData.activeRoom) {
-      navigate(`/room/${gameData.activeRoom.name}`);
+      navigate(`/room/${gameData.activeRoom.code}`);
     }
   }, [gameData]);
 

@@ -15,7 +15,8 @@ const GameInfo = () => {
     const roomCode = gameData.activeRoom.name;
 
     try {
-      await contract.quitBattle(roomCode,{gasLimit:200000});
+      console.log("ho");
+      await contract.quitGame(roomCode,{gasLimit:500000});  // TODO: ERROR
 
       setShowAlert({ status: true, type: 'info', message: `You're quitting the room ${roomCode}` });
     } catch (error) {
@@ -61,8 +62,7 @@ const GameInfo = () => {
         </div>
 
         <div className={`${styles.flexBetween} mt-10 gap-4 w-full`}>
-          <CustomButton title="Change Battleground" handleClick={() => navigate('/levels')} />
-          <CustomButton title="Exit Battle" handleClick={() => handleBattleExit()} />
+          <CustomButton title="Exit Level" handleClick={() => handleBattleExit()} />
         </div>
       </div>
     </>

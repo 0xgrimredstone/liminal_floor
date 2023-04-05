@@ -1,4 +1,3 @@
-import Card from './Card';
 import Alert from './Alert';
 import PageHOC from './PageHOC';
 import GameInfo from './GameInfo';
@@ -8,9 +7,9 @@ import CustomInput from './CustomInput';
 import CustomButton from './CustomButton';
 import ActionButton from './ActionButton';
 import OnboardModal from './OnboardModal';
+import FadeIn from './FadeIn';
 
 export {
-    Card,
     Alert,
     PageHOC,
     GameInfo,
@@ -20,4 +19,5 @@ export {
     CustomButton,
     ActionButton,
     OnboardModal,
+    FadeIn
 };

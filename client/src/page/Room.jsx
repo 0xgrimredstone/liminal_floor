@@ -1,50 +1,74 @@
+import ReactTooltip from 'react-tooltip';
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
-import styles from '../styles';
-import {ActionButton, Alert, Card, GameInfo, PlayerInfo} from '../components';
+import styles from "../styles";
+import HotelCanvas from "../components/models/Hotel";
 import { useGlobalContext } from '../context';
-import { attack, attackSound, defense, defenseSound, player01 as player01Icon, player02 as player02Icon } from '../assets';
 import { playAudio } from '../utils/animation.js';
 
+
+
+import { ActionButton, Alert, GameInfo, FadeIn } from '../components';
+import { footstep, player01 as player01Icon } from '../assets';
+import { faChevronRight, faChevronLeft, faChevronUp } from '@fortawesome/free-solid-svg-icons'
+
+
 const Room = () => {
-  const { contract, gameData, walletAddress, showAlert, setShowAlert, level, setErrorMessage, player1Ref, player2Ref} = useGlobalContext();
-  const [player2, setPlayer2] = useState({});
-  const [player1, setPlayer1] = useState({}); 
+  const { contract, gameData, walletAddress, showAlert, setShowAlert, level, setErrorMessage, playerRef, } = useGlobalContext();
+  const [player, setPlayer] = useState({}); 
+  const [isFullyRendered, setFullyRendered] = useState(true);
+  const [buttonStyles, setButtonStyles] = useState(["mx-10 mt-10 bg-white dark:bg-white", "mr-10 bg-white dark:bg-white", "ml-10 bg-white dark:bg-white"]);
+  const [buttonAvailable, setButtonAvailable] = useState([false, false, false]);
+  const [depth, setDepth] = useState(-1); 
   const { name } = useParams();//battle/Name
-  const navigate = useNavigate();
+  const [cameraPos, setCameraPos] = useState(0);
+
+  const refreshButtonStyles = () => {
+    let t = ["mx-10 mt-10 bg-white dark:bg-white", "mr-10 bg-white dark:bg-white", "ml-10 bg-white dark:bg-white"];
+    let y = [false, false, false];
+    let c = gameData.activeRoom.currentCoord;
+
+    if (c[0] + 1 <= 5){
+      if(gameData.activeRoom.gameMap[c[0]+1][c[1]] != 0) {
+        t[0] = "mx-10 mt-10 hover:border-[#7c4353]";
+        y[0] = true;
+      }
+    }
+    if (c[1] + 1 <= 5){
+      if(gameData.activeRoom.gameMap[c[0]][c[1]+1] != 0) {
+        t[1] = "mr-10 hover:border-[#7c4353]";
+        y[1] = true;
+      }
+    }
+    if (c[1] - 1 >= 0){
+      if(gameData.activeRoom.gameMap[c[0]][c[1]-1] != 0) {
+        t[2] = "ml-10 hover:border-[#7c4353]";
+        y[2] = true;
+      }
+    }
+    setButtonStyles(t);
+    setButtonAvailable(y);
+  }
 
   useEffect(() => {
     const getPlayerInfo = async () => {
       try {
         // save players locally
         let player01Address = null;
-        let player02Address = null;
 
-        if (gameData.activeRoom.players[0].toLowerCase() === walletAddress.toLowerCase()) {
-          player01Address = gameData.activeRoom.players[0];
-          player02Address = gameData.activeRoom.players[1];
-        } else {
-          player01Address = gameData.activeRoom.players[1];
-          player02Address = gameData.activeRoom.players[0];
+        if (gameData.activeRoom.player.toLowerCase() === walletAddress.toLowerCase()) {
+          player01Address = gameData.activeRoom.player;
         }
 
         // fetch player data
         const p1TokenData = await contract.getPlayerToken(player01Address);
         const player01 = await contract.getPlayer(player01Address);
-        const player02 = await contract.getPlayer(player02Address);
-
-        // specify each element
-        const p1Att = p1TokenData.attackStrength.toNumber();
-        const p1Def = p1TokenData.defenseStrength.toNumber();
-        const p1H = player01.playerHealth.toNumber();
-        const p1M = player01.playerMana.toNumber();
-        const p2H = player02.playerHealth.toNumber();
-        const p2M = player02.playerMana.toNumber();
 
         // set state
-        setPlayer1({ ...player01, att: p1Att, def: p1Def, health: p1H, mana: p1M });
-        setPlayer2({ ...player02, att: '?', def: '?', health: p2H, mana: p2M });
+        setPlayer({ ...player01, Token: p1TokenData });
+        console.log(player);
+        refreshButtonStyles();
       } catch (error) {
         setErrorMessage(error.message);
       }
@@ -52,72 +76,79 @@ const Room = () => {
 
     if (contract && gameData.activeRoom) getPlayerInfo();
   }, [contract, walletAddress, gameData, name]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!gameData?.activeRoom) navigate('/');
-    }, [2000]);
-
-    return () => clearTimeout(timer);
-  }, []);
-
+  
   const makeAMove = async (choice) => {
-    playAudio(choice === 1 ? attackSound : defenseSound);
-
+    if(!buttonAvailable[choice-1]) {
+      console.log("unavailable");
+      return;
+    }
     try {
       console.log(gameData.activeRoom);
-      await contract.attackOrDefendChoice(choice, name, { gasLimit: 200000 });
-
+      await contract.GameProgress(choice, name, { gasLimit: 500000 });
+      if(isFullyRendered) setFullyRendered(false);
+      playAudio( footstep, false ).play();
+      
       setShowAlert({
         status: true,
         type: 'info',
-        message: `Initiating ${choice === 1 ? 'attack' : 'defense'}`,
+        message: `Going ${choice === 1 ? 'forward' : choice === 2 ? 'left' : 'right'}`,
       });
+      refreshButtonStyles();
+      setCameraPos(choice);
     } catch (error) {
       // console.log(error);
       setErrorMessage(error);
     }
-  };
+  }
+
+  useEffect(() => {
+    if (gameData?.activeRoom?.depth != depth) {
+      setCameraPos(0);
+      setDepth(gameData?.activeRoom?.depth);
+      console.log(gameData?.activeRoom?.depth, depth);
+      if(!isFullyRendered) setFullyRendered(true);
+    }
+  },[gameData?.activeRoom?.depth])
 
   return (
-    <div className={`${styles.flexBetween} ${styles.gameContainer} ${level}`}>
-      {showAlert?.status && <Alert type={showAlert.type} message={showAlert.message} />}
-        <PlayerInfo player={player2} playerIcon={player02Icon} mt />
-
-      <div className={`${styles.flexCenter} flex-col my-10`}>
-        <Card
-          card={player2}
-          title={player2?.playerName}
-          cardRef={player2Ref}
-          playerTwo
-        />
-
+    <section className={`${styles.flexBetween} ${styles.gameContainer} relative w-full h-screen mx-auto bg-siteblack`}>
+      <FadeIn show={isFullyRendered}>
+        <HotelCanvas ready={isFullyRendered} choice={cameraPos}/>
+        <div className={`${styles.flexCenter} flex-col mb-20`}>
         <div className="flex items-center flex-row">
-          <ActionButton
-            imgUrl={attack}
+        <ActionButton
+            imgUrl={faChevronUp}
             handleClick={() => makeAMove(1)}
-            restStyles="mr-2 hover:border-yellow-400"
-          />
-
-          <Card
-            card={player1}
-            title={player1?.playerName}
-            cardRef={player1Ref}
-            restStyles="mt-3"
-          />
-
-          <ActionButton
-            imgUrl={defense}
-            handleClick={() => makeAMove(2)}
-            restStyles="ml-6 hover:border-red-600"
+            restStyles={buttonStyles[0]}
           />
         </div>
-      </div>
-
-      <PlayerInfo player={player1} playerIcon={player01Icon} />
-
-      <GameInfo /> 
-    </div>
+        <div className="flex items-center flex-row">
+          <ActionButton
+            imgUrl={faChevronLeft}
+            handleClick={() => makeAMove(2)}
+            restStyles={buttonStyles[1]}
+          />
+          
+          <ActionButton
+            imgUrl={faChevronRight}
+            handleClick={() => makeAMove(3)}
+            restStyles={buttonStyles[2]}
+          />
+        </div>
+        <div>
+          <div
+            data-for={`Depth`}
+            data-tip="How far in you are"
+            className={`${styles.gameMoveBox} ${styles.flexCenter} ${styles.glassEffect} ${styles.playerMana} cursor-default`}
+          >
+            {gameData?.activeRoom?.depth}
+          </div>
+        </div>
+        </div>
+        <GameInfo /> 
+        <ReactTooltip id={`Depth`} effect="solid" backgroundColor="#7c4353" />
+      </FadeIn>
+    </section>
   );
 };
 
