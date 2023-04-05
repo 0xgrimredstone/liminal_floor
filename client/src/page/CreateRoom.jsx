@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import styles from '../styles';
 import { useGlobalContext } from '../context';
 import { CustomButton, PageHOC, GameLoad } from '../components';
 
 const CreateRoom = () => {
   const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const { contract, setRoomCode, gameData, setErrorMessage } = useGlobalContext();
-  const [waitRoom, setWaitRoom] = useState(false);
   const navigate = useNavigate();
+  const [waitRoom, setWaitRoom] = useState(false);
 
   //* Generate random strings as room code
   function generateString(length) {
@@ -23,12 +22,12 @@ const CreateRoom = () => {
   }
 
   useEffect(() => {
-    // console.log("gameData update found in create room");
-    // console.log(gameData?.activeRoom);
-    if (gameData?.activeRoom?.battleStatus === 1) {
-      navigate(`/room/${gameData.activeRoom.name}`);
-    } else if (gameData?.activeRoom?.battleStatus === 0) {
-      // console.log("setting gameload to true");
+    console.log("gameData update found in create room");
+    console.log(gameData?.pendingRoom);
+    if (gameData?.activeRoom?.GameStatus === 1) {
+      navigate(`/room/${gameData.activeRoom.code}`);
+    }
+    else if (gameData?.activeRoom?.GameStatus === 0) {
       setWaitRoom(true);
     }
   }, [gameData]);
@@ -39,29 +38,29 @@ const CreateRoom = () => {
     console.log("created room "+temp_code);
     
     try {
-      await contract.createBattle(temp_code,{gasLimit:200000});
-
+      await contract.createGame(temp_code,{gasLimit:500000});
+      console.log("done?");
       setWaitRoom(true);
+      console.log(gameData);
+      const fetchedRooms = await contract.getAllGames();
+      console.log(fetchedRooms);
+
     } catch (error) {
-      // console.log(error);
       setErrorMessage(error);
     }
   };
 
   return (
     <>
-      {waitRoom && <GameLoad />}
+      {waitRoom && <GameLoad/>}
 
       <div className="flex flex-col mb-5">
 
         <CustomButton
-          title="Generate Room Code"
+          title="Choose a Level"
           handleClick={handleClick}
         />
       </div>
-      <p className={styles.infoText} onClick={() => navigate('/join-room')}>
-        Or join already existing rooms
-      </p>
     </>
   );
 };
@@ -69,6 +68,6 @@ const CreateRoom = () => {
 export default 
 PageHOC(
   CreateRoom,
-  <>Start playing<br/> with friends</>, 
-  <>Create your own room and share the room code with your friends</>
+  <>Step into the unknown</>, 
+  <>Start a level</>
 );

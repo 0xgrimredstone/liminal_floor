@@ -1,8 +1,8 @@
 import { ethers } from 'ethers';
 
 import { ABI } from '../contract';
-import { playAudio, sparcle } from '../utils/animation.js';
-import { defenseSound } from '../assets';
+import { lose, win } from '../assets';
+import { playAudio } from '../utils/animation';
 
 const AddNewEvent = ( eventFilter, provider, cb ) => {
   provider.removeListener( eventFilter );
@@ -14,20 +14,10 @@ const AddNewEvent = ( eventFilter, provider, cb ) => {
   } );
 };
 
-//* Get battle card coordinates
-const getCoords = ( cardRef ) => {
-  const { left, top, width, height } = cardRef.current.getBoundingClientRect();
-
-  return {
-    pageX: left + width / 2,
-    pageY: top + height / 2.25,
-  };
-};
-
 const emptyAccount = '0x0000000000000000000000000000000000000000';
 
 export const createEventListeners = (
-  { navigate, contract, provider, walletAddress, setShowAlert, player1Ref, player2Ref, setUpdateGameData }
+  { navigate, contract, provider, walletAddress, setShowAlert, setUpdateGameData }
 ) => {
   const NewPlayerEventFilter = contract.filters.NewPlayer();
   AddNewEvent( NewPlayerEventFilter, provider, ( { args } ) => {
@@ -42,12 +32,12 @@ export const createEventListeners = (
     }
   } );
 
-  const NewRoomEventFilter = contract.filters.NewBattle();
+  const NewRoomEventFilter = contract.filters.NewGame();
   AddNewEvent( NewRoomEventFilter, provider, ( { args } ) => {
     console.log( 'New Level started!', args, walletAddress );
 
-    if ( walletAddress.toLowerCase() === args.player1.toLowerCase() || walletAddress.toLowerCase() === args.player2.toLowerCase() ) {
-      navigate( `/room/${args.name}` );
+    if ( walletAddress.toLowerCase() === args.player.toLowerCase() ) {
+      navigate( `/room/${args.gameName}` );
     }
 
     setUpdateGameData( ( prevUpdateGameData ) => prevUpdateGameData + 1 );
@@ -68,7 +58,7 @@ export const createEventListeners = (
     }
   } );
 
-  const MoveEventFilter = contract.filters.BattleMove();
+  const MoveEventFilter = contract.filters.GameMove();
   AddNewEvent( MoveEventFilter, provider, ( { args } ) => {
     console.log( 'Move initiated!', args );
   } );
@@ -77,30 +67,19 @@ export const createEventListeners = (
   AddNewEvent( RoundEndedEventFilter, provider, ( { args } ) => {
     console.log( 'Round ended!', args, walletAddress );
 
-    for ( let i = 0; i < args.damagedPlayers.length; i += 1 ) {
-      if ( args.damagedPlayers[i] !== emptyAccount ) {
-        if ( args.damagedPlayers[i] === walletAddress ) {
-          sparcle( getCoords( player1Ref ) );
-        } else if ( args.damagedPlayers[i] !== walletAddress ) {
-          sparcle( getCoords( player2Ref ) );
-        }
-      } else {
-        playAudio( defenseSound );
-      }
-    }
-
     setUpdateGameData( ( prevUpdateGameData ) => prevUpdateGameData + 1 );
   } );
 
   // Battle Ended event listener
-  const BattleEndedEventFilter = contract.filters.BattleEnded();
+  const BattleEndedEventFilter = contract.filters.GameEnded();
   AddNewEvent( BattleEndedEventFilter, provider, ( { args } ) => {
-    if ( walletAddress.toLowerCase() === args.winner.toLowerCase() ) {
-      setShowAlert( { status: true, type: 'success', message: 'You won!' } );
-    } else if ( walletAddress.toLowerCase() === args.loser.toLowerCase() ) {
-      setShowAlert( { status: true, type: 'failure', message: 'You lost!' } );
+    if ( args.win ) {
+      navigate( '/won' );
+      playAudio( win, false ).play();
+    } else {
+      console.log( args );
+      navigate( '/lost' );
+      playAudio( lose, false ).play();
     }
-
-    setTimeout( () => navigate( '/create-room' ), 3000 )
   } );
 };

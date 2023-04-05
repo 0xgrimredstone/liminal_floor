@@ -4,10 +4,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        siteblack: '#030311',
-        siteDimBlack: '#141413',
-        siteViolet: '#9E1B47',
-        siteWhite: '#ECEFF4',
+        siteblack: '#180c0c',
+        siteDimBlack: '#45232b',
+        siteDarkViolet: '#7c4353',
+        siteViolet: '#a56879',
+        siteWhite: '#ecf3cb',
+        siteFullWhite: '#fdfff2',
       },
       backgroundImage: {
         astral: "url('/src/assets/background/astral.jpg')",
@@ -21,6 +23,9 @@ module.exports = {
       fontFamily: {
         libreBaskerville: ['Libre Baskerville', 'serif'],
         montserrat: ['Montserrat', 'sans-serif'],
+        mozart: ['Mozart', 'sans-serif'],
+        bitDragon: ['bit Dragon', 'sans-serif'],
+        connectionII: ['Connection II', 'sans-serif'],
       },
     },
   },
