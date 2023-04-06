@@ -7,22 +7,13 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 
 /// @title LiminalFloor
-/// @notice This contract handles the token management and experience logic for the Liminal Floor game. uses AvaxGods as base
-/// @notice Version 1.0.0
+/// @notice This contract handles the token management and experience logic for the Liminal Floor game
+/// @notice Version 1.0.2
 /// @author Raphaele Guillemot
-/// @author Julian Martinez
-/// @author Gabriel Cardona
-/// @author Raj Ranjan
 
 contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
     string public baseURI; // baseURI where token metadata is stored
     uint256 public totalSupply; // Total number of tokens minted
-    uint256 public constant DEVIL = 0;
-    uint256 public constant GRIFFIN = 1;
-    uint256 public constant FIREBIRD = 2;
-    uint256 public constant KAMO = 3;
-    uint256 public constant KUKULKAN = 4;
-    uint256 public constant CELESTION = 5;
 
     enum GameStatus {
         PENDING,
@@ -48,12 +39,12 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
         GameStatus GameStatus; /// @param GameStatus enum to indicate game status
         bytes32 codeHash; /// @param codeHash a hash of the game name
         string code; /// @param code room code; set randomly generated
-        address player; /// @param players address  representing player in this game
-        uint8[2] currentCoord; /// @param currentCoord uint array representing players' coordinates
-        uint8 depth; /// @param depth how far in the player is in the game
-        uint8[5][5] gameMap; /// @param map the whole gameMap
-        bool win; /// @param win whether player won
-        bool move; /// @param move whether player moved this round
+        address[2] players; /// @param players address  representing player in this game
+        int8 level; /// @param level int8 representing the level of the game
+        uint8[2] position; /// @param position uint array representing players' coordinates
+        uint8[5][5] gameRotationMap; /// @param map the whole gameMap
+        bool[2] moves; /// @param move whether players moved this round
+        uint8 gameEnd; /// @param win whether won or lost
     }
 
     mapping(address => uint256) public playerInfo; // Mapping of player addresses to player index in the players array
@@ -141,7 +132,6 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
     function setURI(string memory newuri) public onlyOwner {
         _setURI(newuri);
     }
-
     function initialize() private {
         gameTokens.push(GameToken("", 0));
         players.push(Player(address(0), "", false));
@@ -150,9 +140,9 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
                 GameStatus.PENDING,
                 bytes32(0),
                 "",
-                address(0),
-                [0, 1],
-                uint8(0),
+                [address(0), address(0)],
+                0,
+                [0, 2],
                 [
                     [0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0],
@@ -160,8 +150,8 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
                     [0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0]
                 ],
-                false,
-                false
+                [false, false],
+                0
             )
         );
     }
@@ -221,7 +211,11 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
 
     /// @dev Creates a new game
     /// @param _code game name; set by player
-    function createGame(string memory _code) external returns (Game memory) {
+    function createGame(
+        string memory _code,
+        uint8 memory _level,
+        uint8[2] memory _positon,
+        ) external returns (Game memory) {
         require(isPlayer(msg.sender), "Please Register Player First"); // Require that the player is registered
         require(!isGame(_code), "Game already exists!"); // Require game with same name should not exist
 
@@ -231,23 +225,44 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
             GameStatus.PENDING, // Game pending
             gameHash, // Game hash
             _code, // Game name
-            msg.sender, // player addresses
-            [0, 1], // current coordinate
-            0, // depth count
+            [msg.sender, address(0)], // player addresses
+            _level,
+            _positon, // current coordinate
             [
-                [1, 1, 1, 0, 0],
-                [1, 1, 1, 0, 0],
-                [2, 0, 3, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0]
             ],
-            false, // win bool, default false
-            false // move bool, default false
+            [false, false], // move bool, default false
+            0               // game end, default 0
         );
 
         uint256 _id = games.length;
         gameInfo[_code] = _id;
         games.push(_game);
+
+        return _game;
+    }
+
+    /// @dev Player joins game
+    /// @param _name game name; name of game player wants to join
+    function joinGame(string memory _name) external returns (Game memory) {
+        Game memory _game = getGame(_name);
+
+        require(
+            _game.gameStatus == GameStatus.PENDING,
+            "Game already started!"
+        ); // Require that game has not started
+        require(
+            _game.players[0] != msg.sender,
+            "Only player two can join a game"
+        ); // Require that player 2 is joining the game
+        require(!getPlayer(msg.sender).inGame, "Already in game"); // Require that player is not already in a game
+
+        _game.players[1] = msg.sender;
+        updateGame(_name, _game);
 
         return _game;
     }
@@ -262,7 +277,10 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
 
         _game.GameStatus = GameStatus.STARTED;
 
-        players[playerInfo[_game.player]].inGame = true;
+        players[playerInfo[_game.players[0]]].inGame = true;
+        if (_game.players[1] != address(0)) {
+            players[playerInfo[_game.players[1]]].inGame = true;
+        }
 
         emit NewGame(_code, msg.sender); // Emits NewGame event
         updateGame(_code, _game);
@@ -330,7 +348,7 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
 
         require(_game.GameStatus == GameStatus.STARTED, "Game not started."); // Require that game has started
         require(_game.GameStatus != GameStatus.ENDED, "Game has already ended"); // Require that game has not ended
-        require(msg.sender == _game.player, "You are not in this game"); // Require that player is in the game
+        require(msg.sender == _game.players[0] || msg.sender == _game.players[1], "You are not in this game"); // Require that player is in the game
         require(_game.move == false, "You have already made a move!");
 
         _registerPlayerMove(_choice, _gameName);
