@@ -14,9 +14,8 @@ import { faChevronRight, faChevronLeft, faChevronUp } from '@fortawesome/free-so
 
 const Room = () => {
   // info
-  const { contract, gameData, walletAddress, showAlert, setShowAlert, setErrorMessage, playerRef, } = useGlobalContext();
+  const { contract, gameData, walletAddress, showAlert, setShowAlert, setErrorMessage, playerRef, depth, setDepth} = useGlobalContext();
   const [player, setPlayer] = useState({}); 
-  const [depth, setDepth] = useState(0); 
   const { name } = useParams();//room/Name
   const [roomValue, setRoomValue] = useState(0);
   // visuals

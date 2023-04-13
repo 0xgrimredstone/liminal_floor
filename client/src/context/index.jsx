@@ -5,6 +5,7 @@ import {useNavigate} from 'react-router-dom';
 import { ABI, ADDRESS } from '../contract';
 import { createEventListeners } from './createEventListeners';
 import {GetParams} from '../utils/Onboard';
+import {AudioButton} from '../components';
 
 const GlobalContext = createContext();
 export const GlobalContextProvider = ({children})=> {
@@ -16,6 +17,7 @@ export const GlobalContextProvider = ({children})=> {
   const [gameData, setGameData] = useState({ player: "0x00", pendingRooms: [], activeRoom: null });
   const [updateGameData, setUpdateGameData] = useState(0);
   const [level, setLevel] = useState(0);
+  const [depth, setDepth] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
   const [step, setStep] = useState(1);
    
@@ -145,12 +147,14 @@ export const GlobalContextProvider = ({children})=> {
           roomCode, setRoomCode,
           gameData, 
           level, setLevel,
+          depth, setDepth,
           setErrorMessage,
           updateCurrentWalletAddress
 
         }}>
             
             {children}
+            <AudioButton depth={depth}/>
 
         </GlobalContext.Provider>
     )

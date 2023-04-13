@@ -9,24 +9,13 @@ import ReactTooltip from 'react-tooltip';
 const AudioButton = ({depth}) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolume] = useState(70);
-    const [open, setOpen] = useState(true);
-    // useEffect(() => {
-    //   setTimeout  (() => {
-    //     setOpen(true);
-    //   } , 5000);
-    // },[]);
-
-    const handleOpen = () => {
-      setOpen(true);
-    }
-    const handleClose = () => {
-      setOpen(false);
-    }
-
 
     useEffect (() => { 
       switch (depth) {
-        case 0 && 1:
+        case 0:
+          setVolume(70);
+          break;
+        case 1:
           setVolume(70);
           break;
         case 2:
@@ -63,7 +52,7 @@ const AudioButton = ({depth}) => {
         />
         <FontAwesomeIcon icon={isPlaying ? faVolumeUp : faVolumeMute} className={`text-white`}/>
     </div>
-    <ReactTooltip id="Music" effect="solid" backgroundColor="#7c4353" open={open} onClose={handleClose} onOpen={handleOpen}/>
+    <ReactTooltip id="Music" effect="solid" backgroundColor="#7c4353" />
     </>
   )
 }
