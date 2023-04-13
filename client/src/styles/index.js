@@ -21,16 +21,17 @@ const styles = {
   joinLoading: 'font-mozart font-normal text-xl text-siteFullWhite',
 
   // levels page
-  levelsContainer: 'min-h-screen bg-landing flex-col py-12 px-4',
+  levelsContainer: 'min-h-screen bg-siteblack flex-col py-12 px-4',
   levelsWrapper: 'flex-wrap mt-10 max-w-[1200px]',
-  levelsCard: 'sm:w-[420px] w-full h-[260px] p-2 glass-morphism m-4 rounded-lg cursor-pointer battle-card',
+  levelsCard: 'sm:w-[160px] w-full h-[160px] p-2 m-4 cursor-pointer bg-siteViolet hover:bg-siteDarkViolet',
   levelsCardImg: 'w-full h-full object-cover rounded-md',
-  levelsCardText: 'font-mozart font-semibold text-2xl text-siteFullWhite',
+  levelsCardText: 'font-bitDragon font-semibold text-3xl text-siteFullWhite text-center',
 
   // Game page
   gameContainer: 'w-screen min-h-screen bg-cover bg-no-repeat bg-center flex-col',
   gameMoveBox: 'sm:w-20 w-14 sm:h-20 h-14 rounded-full cursor-pointer border-[2px]',
   gameMoveIcon: 'w-1/2 h-1/w-1/2 object-contain',
+  gameAudioBox: 'absolute right-2 bottom-1',
 
   // player info component
   playerImg: 'w-14 h-14 object-contain rounded-full',

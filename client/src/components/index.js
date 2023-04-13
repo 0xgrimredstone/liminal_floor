@@ -8,6 +8,7 @@ import CustomButton from './CustomButton';
 import ActionButton from './ActionButton';
 import OnboardModal from './OnboardModal';
 import FadeIn from './FadeIn';
+import AudioButton from './AudioButton';
 
 export {
     Alert,
@@ -19,5 +20,6 @@ export {
     CustomButton,
     ActionButton,
     OnboardModal,
-    FadeIn
+    FadeIn,
+    AudioButton
 };

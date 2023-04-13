@@ -6,6 +6,7 @@ import Alert from './Alert';
 import { useGlobalContext } from '../context';
 import { logo, launchImg } from '../assets';
 import styles from '../styles';
+import AudioButton from './AudioButton';
 
 const PageHOC = (Component, title, desc) => () => {
   const { showAlert } = useGlobalContext();
@@ -23,7 +24,8 @@ const PageHOC = (Component, title, desc) => () => {
                 <p className={`${styles.normalText} my-10`}>{desc}</p>
                 <Component/>
             </div>
-            <p className={styles.footerText}>ver 1.0.1 | <a className={styles.infoText} onClick={()=> navigate('/dev')}>Developer's Notes</a></p>
+            <AudioButton depth={0}/>
+            <p className={styles.footerText}>ver 1.0.2 | <a className={styles.infoText} onClick={()=> navigate('/dev')}>Developer's Notes</a></p>
         </div>
     </div>
   );

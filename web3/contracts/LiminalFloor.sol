@@ -40,11 +40,11 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
         bytes32 codeHash; /// @param codeHash a hash of the game name
         string code; /// @param code room code; set randomly generated
         address[2] players; /// @param players address  representing player in this game
-        int8 level; /// @param level int8 representing the level of the game
+        uint8 level; /// @param level int8 representing the level of the game
         uint8[2] position; /// @param position uint array representing players' coordinates
         uint8[5][5] gameRotationMap; /// @param map the whole gameMap
         bool[2] moves; /// @param move whether players moved this round
-        uint8 gameEnd; /// @param win whether won or lost
+        bool win;
     }
 
     mapping(address => uint256) public playerInfo; // Mapping of player addresses to player index in the players array
@@ -132,6 +132,7 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
     function setURI(string memory newuri) public onlyOwner {
         _setURI(newuri);
     }
+
     function initialize() private {
         gameTokens.push(GameToken("", 0));
         players.push(Player(address(0), "", false));
@@ -151,7 +152,7 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
                     [0, 0, 0, 0, 0]
                 ],
                 [false, false],
-                0
+                false
             )
         );
     }
@@ -213,9 +214,9 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
     /// @param _code game name; set by player
     function createGame(
         string memory _code,
-        uint8 memory _level,
-        uint8[2] memory _positon,
-        ) external returns (Game memory) {
+        uint8 _level,
+        uint8[2] memory _positon
+    ) external returns (Game memory) {
         require(isPlayer(msg.sender), "Please Register Player First"); // Require that the player is registered
         require(!isGame(_code), "Game already exists!"); // Require game with same name should not exist
 
@@ -236,7 +237,7 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
                 [0, 0, 0, 0, 0]
             ],
             [false, false], // move bool, default false
-            0               // game end, default 0
+            false
         );
 
         uint256 _id = games.length;
@@ -252,7 +253,7 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
         Game memory _game = getGame(_name);
 
         require(
-            _game.gameStatus == GameStatus.PENDING,
+            _game.GameStatus == GameStatus.PENDING,
             "Game already started!"
         ); // Require that game has not started
         require(
@@ -288,73 +289,70 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
     }
 
     // Read game map
-    function checkInBound(
-        string memory _gameName,
-        int8[2] memory _toCheck
-    ) public view returns (bool) {
-        Game memory _game = getGame(_gameName);
-
-        uint8[5][5] memory map = _game.gameMap;
-        uint8[2] memory coord = _game.currentCoord;
-
-        if (5 > uint8(int8(coord[0]) + _toCheck[0])) {
-            if (5 > uint8(int8(coord[1]) + _toCheck[1])) {
-                if (
-                    map[uint8(int8(coord[0]) + _toCheck[0])][
-                        uint8(int8(coord[1]) + _toCheck[1])
-                    ] != 0
-                ) return true;
-            }
-        } else return false;
-    }
-
-    // Read game map
     function getCurrentCoord(
         string memory _gameName
     ) public view returns (uint8[2] memory coord) {
         Game memory _game = getGame(_gameName);
-        return _game.currentCoord;
+        return _game.position;
     }
 
-    function _registerPlayerMove(
-        uint8 _choice,
-        string memory _gameName
+    function _registerPlayer1Move(
+        string memory _gameName,
+        uint8[2] memory _choice
     ) internal {
-        int8[2] memory choiceCoord = _choice == 1
-            ? [int8(1), int8(0)]
-            : _choice == 2
-            ? [int8(0), int8(1)]
-            : [int8(0), int8(-1)];
-        require(
-            _choice == 1 || _choice == 2 || _choice == 3,
-            "Choice should be either 1 or 2 or 3!"
-        );
-        require(
-            checkInBound(_gameName, choiceCoord),
-            "Tile out of bounds or unavailable!"
-        );
-        uint8[2] memory c = games[gameInfo[_gameName]].currentCoord;
-        games[gameInfo[_gameName]].currentCoord = [
-            uint8(int8(c[0]) + choiceCoord[0]),
-            uint8(int8(c[1]) + choiceCoord[1])
-        ];
-        games[gameInfo[_gameName]].depth++;
-        games[gameInfo[_gameName]].move = true;
+        Game memory _game = getGame(_gameName);
+        uint8[2] memory prev = _game.position;
+        _game.position = _choice;
+        _game.moves[0] = true;
+        updateGame(_gameName, _game);
+    }
+
+    function _registerPlayer2Move(
+        string memory _gameName,
+        uint8[2] memory _choice,
+        uint8 _toChange
+    ) internal {
+        Game memory _game = getGame(_gameName);
+        _game.gameRotationMap[_choice[0]][_choice[1]] = _toChange;
+        _game.moves[1] = true;
+        updateGame(_gameName, _game);
     }
 
     // User chooses attack or defense move for game card
-    function GameProgress(uint8 _choice, string memory _gameName) external {
+    // _toChange (P1 : whether player wins (3,4), P2 : what to rotate to (0,1,2))
+    function GameProgress(
+        uint8[2] memory _choice,
+        uint8 _toChange,
+        string memory _gameName
+    ) external {
         Game memory _game = getGame(_gameName);
 
         require(_game.GameStatus == GameStatus.STARTED, "Game not started."); // Require that game has started
         require(_game.GameStatus != GameStatus.ENDED, "Game has already ended"); // Require that game has not ended
-        require(msg.sender == _game.players[0] || msg.sender == _game.players[1], "You are not in this game"); // Require that player is in the game
-        require(_game.move == false, "You have already made a move!");
+        require(
+            msg.sender == _game.players[0] || msg.sender == _game.players[1],
+            "You are not in this game"
+        ); // Require that player is in the game
+        require(
+            msg.sender == _game.players[0]
+                ? _game.moves[0] == false
+                : _game.moves[1] == false,
+            "You have already made a move!"
+        );
 
-        _registerPlayerMove(_choice, _gameName);
+        if (msg.sender == _game.players[1]) {
+            _registerPlayer2Move(_gameName, _choice, _toChange);
+        } else {
+            _registerPlayer1Move(_gameName, _choice);
+        }
+
         _game = getGame(_gameName);
         emit GameMove(_gameName);
-        _resolveGame(_game);
+        if (msg.sender == _game.players[1]) {
+            _resolveGame(_game, 0);
+        } else {
+            _resolveGame(_game, _toChange);
+        }
     }
 
     struct P {
@@ -365,25 +363,27 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
 
     /// @dev Resolve game function to determine winner and loser of game
     /// @param _game game; game to resolve
-    function _resolveGame(Game memory _game) internal {
-        uint8 loc = _game.gameMap[_game.currentCoord[0]][_game.currentCoord[1]];
-        if (loc == 2 || loc == 3) {
-            // LOSE || WIN
-            _endGame(loc, _game);
+    function _resolveGame(Game memory _game, uint8 end) internal {
+        if (end >= 3) {
+            // 3 - LOSE || 4 - WIN
+            _endGame(end, _game);
         }
 
         emit RoundEnded();
 
         // Reset moves to 0
-        _game.move = false;
+        _game.moves = [false, false];
         updateGame(_game.code, _game);
     }
 
     function quitGame(string memory _gameName) public {
         Game memory _game = getGame(_gameName);
-        require(_game.player == msg.sender, "You are not in this game!");
+        require(
+            msg.sender == _game.players[0] || msg.sender == _game.players[1],
+            "You are not in this game!"
+        );
 
-        _endGame(2, _game);
+        _endGame(3, _game);
     }
 
     /// @dev internal function to end the game
@@ -396,12 +396,13 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
         require(_game.GameStatus != GameStatus.ENDED, "Game already ended"); // Require that game has not ended
 
         _game.GameStatus = GameStatus.ENDED;
-        _game.win = _type == 3 ? true : false;
+        _game.win = _type == 4 ? true : false;
         updateGame(_game.code, _game);
 
-        players[playerInfo[_game.player]].inGame = false;
+        players[playerInfo[_game.players[0]]].inGame = false;
+        players[playerInfo[_game.players[1]]].inGame = false;
 
-        emit GameEnded(_game.code, _type == 3 ? true : false); // Emits GameEnded event
+        emit GameEnded(_game.code, _type == 4 ? true : false); // Emits GameEnded event
 
         return _game;
     }

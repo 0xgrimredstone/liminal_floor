@@ -10,8 +10,6 @@ const GameLoad = () => {
   /*////////////
   TODO
   - accept multiple people in one room (UI + function)
-  - start game manually (button)
-  - quit room function
   ///////////*/
 
   const { walletAddress, gameData, roomCode, setErrorMessage, contract } = useGlobalContext();
@@ -42,14 +40,6 @@ const GameLoad = () => {
 
   return (
     <div className={`${styles.flexBetween} ${styles.gameLoadContainer}`}>
-      <div className={styles.gameLoadBtnBox}>
-        <CustomButton
-          title="Choose Level"
-          handleClick={() => navigate('/battleground')}
-          restStyles="mt-6"
-          />
-      </div>
-
       <div className={`flex-1 ${styles.flexCenter} flex-col`}>
         <p className={styles.gameLoadText}>
           Room Code:
@@ -57,10 +47,16 @@ const GameLoad = () => {
         <h1 className={`${styles.headText} text-center`}>
           {roomCode}
         </h1>
+        <p className={styles.gameLoadText}>
+          Share the room code if you're playing with a friend!
+        </p>
+        <p className={styles.gameLoadText}>
+          OR
+        </p>
 
         <div className="mt-10">
           <CustomButton
-            title="Start Game"
+            title="Start Solo"
             handleClick={handleStart}
             restStyles="mx-3"
             />

@@ -50,6 +50,7 @@ const Home = () => {
   }, [gameData]);
 
   return (
+    walletAddress && (
     <div className="flex flex-col">
       <CustomInput
         label="Name"
@@ -64,6 +65,7 @@ const Home = () => {
         restStyles="mt-6"
       />    
     </div>
+    )
   )
 };
 

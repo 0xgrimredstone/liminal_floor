@@ -2,8 +2,6 @@ import React, {createContext, useContext, useEffect, useRef, useState} from 'rea
 import {ethers} from 'ethers';
 import Web3Modal from 'web3modal';
 import {useNavigate} from 'react-router-dom';
-import { bgm } from '../assets';
-import { playAudio } from '../utils/animation';
 import { ABI, ADDRESS } from '../contract';
 import { createEventListeners } from './createEventListeners';
 import {GetParams} from '../utils/Onboard';
@@ -17,28 +15,14 @@ export const GlobalContextProvider = ({children})=> {
   const [roomCode, setRoomCode] = useState('');
   const [gameData, setGameData] = useState({ player: "0x00", pendingRooms: [], activeRoom: null });
   const [updateGameData, setUpdateGameData] = useState(0);
-  const [level, setLevel] = useState('bg-astral');
+  const [level, setLevel] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
   const [step, setStep] = useState(1);
-
-  const BGM = playAudio(bgm,true);
    
   const player1Ref = useRef();
   const player2Ref = useRef();
 
   const navigate = useNavigate();
-
-  //* Set level to local storage
-  // TODO: make sure player have chosen level before playing
-  useEffect(() => {
-    const levelFromLocalStorage = localStorage.getItem('level');
-
-    if (levelFromLocalStorage) {
-      setLevel(levelFromLocalStorage);
-    } else {
-      localStorage.setItem('level', level);
-    }
-  }, []);
 
   //* Reset web3 onboarding modal params
   useEffect(() => {
@@ -65,8 +49,6 @@ export const GlobalContextProvider = ({children})=> {
   useEffect(() => {
     updateCurrentWalletAddress();   // seems to already make a popup- nice
     window?.ethereum?.on('accountsChanged', updateCurrentWalletAddress);
-    BGM.pause();
-    BGM.play();
   }, []);
 
   //* Set the smart contract and provider to the state
@@ -108,7 +90,7 @@ export const GlobalContextProvider = ({children})=> {
         let activeRoom = null;
 
         fetchedRooms.forEach((room) => {
-          if (room.player.toLowerCase() === walletAddress.toLowerCase()) {
+          if (room.players.find((player) => player.toLowerCase() === walletAddress.toLowerCase())) {
             if (room.GameStatus === 1 || room.GameStatus === 0) {
               activeRoom = room;
               setRoomCode(activeRoom.code)

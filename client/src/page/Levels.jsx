@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import styles from '../styles';
 import { Alert } from '../components';
-import { battlegrounds } from '../assets';
+import { levels } from '../assets/levels';
 import { useGlobalContext } from '../context';
 
 const Levels = () => {
@@ -13,9 +13,7 @@ const Levels = () => {
   const handleLevelChoice = (level) => {
     setLevel(level.id);
 
-    localStorage.setItem('level', level.id);
-
-    setShowAlert({ status: true, type: 'info', message: `${level.name} is battle ready!` });
+    setShowAlert({ status: true, type: 'info', message: `Level ${level.id} is ready!` });
 
     setTimeout(() => {
       navigate(-1);
@@ -28,23 +26,20 @@ const Levels = () => {
 
       <h1 className={`${styles.headText} text-center`}>
         Choose your
-        <span className="text-siteViolet"> Level </span>
+        <span className="text-siteViolet"> Floor </span>
       </h1>
 
       <div className={`${styles.flexCenter} ${styles.levelsWrapper}`}>
-        {battlegrounds.map((level) => (
-          <div
-            key={level.id}
-            className={`${styles.flexCenter} ${styles.levelsCard}`}
-            onClick={() => handleLevelChoice(level)}
-          >
-            <img src={level.image} alt="saiman" className={styles.levelsCardImg} />
-
-            <div className="info absolute">
-              <p className={styles.levelsCardText}>{level.name}</p>
+        {levels.map((level) => (
+          level.id === 0 ? null : (
+            <div
+              key={`floorSelect_${level.id}`}
+              className={`${styles.flexCenter} ${styles.levelsCard}`}
+              onClick={() => handleLevelChoice(level)}
+            >
+              <p className={styles.levelsCardText}>{level.id}<br/>{level.difficulty}</p>
             </div>
-          </div>
-        ))}
+        )))}
       </div>
     </div>
   );

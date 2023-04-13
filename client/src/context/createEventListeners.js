@@ -73,13 +73,14 @@ export const createEventListeners = (
   // Battle Ended event listener
   const BattleEndedEventFilter = contract.filters.GameEnded();
   AddNewEvent( BattleEndedEventFilter, provider, ( { args } ) => {
+    console.log( "GAME OVER" );
     if ( args.win ) {
       navigate( '/won' );
-      playAudio( win, false ).play();
+      playAudio( win );
     } else {
       console.log( args );
       navigate( '/lost' );
-      playAudio( lose, false ).play();
+      playAudio( lose );
     }
   } );
 };

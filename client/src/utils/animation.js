@@ -2,10 +2,11 @@ import { explosion } from '../assets';
 
 // https://codepen.io/meodai/pen/OVVzBb\
 
-export const playAudio = ( clip, loop ) => {
+export const playAudio = ( clip ) => {
   const audio = new Audio();
   audio.src = clip;
-  loop ? audio.loop = true : audio.loop = false;
+  audio.volume = 0.7;
+  audio.play()
 
 
   return audio;
