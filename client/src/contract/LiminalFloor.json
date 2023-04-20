@@ -249,9 +249,9 @@
 		{
 			"inputs": [
 				{
-					"internalType": "int8[2]",
+					"internalType": "uint8[2]",
 					"name": "_choice",
-					"type": "int8[2]"
+					"type": "uint8[2]"
 				},
 				{
 					"internalType": "uint8",
@@ -260,7 +260,7 @@
 				},
 				{
 					"internalType": "string",
-					"name": "_gameName",
+					"name": "_gameCode",
 					"type": "string"
 				}
 			],
@@ -334,7 +334,7 @@
 			"inputs": [
 				{
 					"internalType": "string",
-					"name": "_code",
+					"name": "_gameCode",
 					"type": "string"
 				},
 				{
@@ -410,7 +410,7 @@
 			"inputs": [
 				{
 					"internalType": "string",
-					"name": "_code",
+					"name": "_gameCode",
 					"type": "string"
 				}
 			],
@@ -639,7 +639,7 @@
 			"inputs": [
 				{
 					"internalType": "string",
-					"name": "_gameName",
+					"name": "_gameCode",
 					"type": "string"
 				}
 			],
@@ -658,7 +658,7 @@
 			"inputs": [
 				{
 					"internalType": "string",
-					"name": "_code",
+					"name": "_gameCode",
 					"type": "string"
 				}
 			],
@@ -828,7 +828,7 @@
 			"inputs": [
 				{
 					"internalType": "string",
-					"name": "_code",
+					"name": "_gameCode",
 					"type": "string"
 				}
 			],
@@ -885,7 +885,7 @@
 			"inputs": [
 				{
 					"internalType": "string",
-					"name": "_name",
+					"name": "_gameCode",
 					"type": "string"
 				}
 			],
@@ -1031,7 +1031,7 @@
 			"inputs": [
 				{
 					"internalType": "string",
-					"name": "_gameName",
+					"name": "_gameCode",
 					"type": "string"
 				}
 			],
@@ -1044,7 +1044,7 @@
 			"inputs": [
 				{
 					"internalType": "string",
-					"name": "_name",
+					"name": "_gameCode",
 					"type": "string"
 				},
 				{
@@ -1166,7 +1166,7 @@
 			"inputs": [
 				{
 					"internalType": "string",
-					"name": "_code",
+					"name": "_gameCode",
 					"type": "string"
 				}
 			],

@@ -8,15 +8,15 @@ import styles from '../styles';
 
 const GameInfo = () => {
   const { contract, gameData, setShowAlert, setErrorMessage } = useGlobalContext();
-  const [toggleSidebar, setToggleSidebar] = useState(false);
+  const [toggleSidebar, setToggleSidebar] = useState(true);
   const navigate = useNavigate();
 
-  const handleBattleExit = async () => {
-    const roomCode = gameData.activeRoom.name;
+  const handleGameExit = async () => {
+    const roomCode = gameData.activeRoom.code;
+    console.log(roomCode);
 
     try {
-      console.log("ho");
-      await contract.quitGame(roomCode,{gasLimit:500000});  // TODO: ERROR
+      await contract.quitGame(roomCode,{gasLimit:500000});
 
       setShowAlert({ status: true, type: 'info', message: `You're quitting the room ${roomCode}` });
     } catch (error) {
@@ -62,7 +62,7 @@ const GameInfo = () => {
         </div>
 
         <div className={`${styles.flexBetween} mt-10 gap-4 w-full`}>
-          <CustomButton title="Exit Level" handleClick={() => handleBattleExit()} />
+          <CustomButton title="Exit Level" handleClick={() => handleGameExit()} />
         </div>
       </div>
     </>

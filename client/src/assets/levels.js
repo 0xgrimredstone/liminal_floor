@@ -30,7 +30,7 @@ export const levels = [
 	{
 		id: 2,
 		difficulty: "★★",
-		start: [0, 0],
+		start: [0, 2],
 		goal: [2, 1],
 		trap: [[2, 3]],
 		map: [
@@ -44,7 +44,7 @@ export const levels = [
 	{
 		id: 3,
 		difficulty: "★★",
-		start: [0, 0],
+		start: [0, 2],
 		goal: [2, 3],
 		trap: [
 			[2, 1],
@@ -61,7 +61,7 @@ export const levels = [
 	{
 		id: 4,
 		difficulty: "★★★",
-		start: [0, 0],
+		start: [0, 3],
 		goal: [3, 1],
 		trap: [[2, 3]],
 		map: [

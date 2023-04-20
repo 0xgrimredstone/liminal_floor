@@ -38,7 +38,7 @@ const AudioButton = ({depth}) => {
   return (
     <>
       <div
-        className={`${styles.gameInfoIcon} ${styles.flexCenter} ${styles.gameAudioBox}`}
+        className={`${styles.gameInfoIcon} ${styles.flexCenter} ${styles.gameAudioBox} mb-5`}
         onClick={handleClick}
         data-for="Music"
         data-tip="Enable background music for a better experience"

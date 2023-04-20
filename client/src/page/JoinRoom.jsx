@@ -15,11 +15,11 @@ const JoinRoom = () => {
 
   const handleClick = async () => {
     try {
-      await contract.joinBattle(roomCode,{gasLimit:200000});
+      await contract.joinGame(roomCode,{gasLimit:200000});
       console.log(gameData);
       setShowAlert({ status: true, type: 'success', message: `Joining ${roomCode}` });
     } catch (error) {
-      // console.log(error);
+      console.log(error);
       setErrorMessage(error);
     }
   };

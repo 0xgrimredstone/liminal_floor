@@ -96,14 +96,14 @@ export const GlobalContextProvider = ({children})=> {
             if (room.GameStatus === 1 || room.GameStatus === 0) {
               activeRoom = room;
               setRoomCode(activeRoom.code)
-              console.log("activeRoom: "+activeRoom.code+" fetched rooms:")
             }
           }
         });
+        console.log(fetchedRooms);
         setGameData({ pendingRooms: pendingRooms.slice(1), activeRoom });
       }
     };
-
+    
     fetchGameData();
   }, [contract, walletAddress, updateGameData]);
 
@@ -134,7 +134,7 @@ export const GlobalContextProvider = ({children})=> {
         setShowAlert({
           status: true,
           type: 'failure',
-          message: "Something went wrong! Please make sure you have your wallet connected",
+          message: "Something went wrong! Make sure your wallet is connected and try again.",
         });
       }
     }

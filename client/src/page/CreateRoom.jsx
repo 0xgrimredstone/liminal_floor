@@ -50,11 +50,11 @@ const CreateRoom = () => {
         console.log("created room "+temp_code);
         try {
           await contract.createGame(temp_code,level,levels[level].start,{gasLimit:500000});
-          console.log("done?");
+          // console.log("done?");
           setWaitRoom(true);
-          console.log(gameData);
-          const fetchedRooms = await contract.getAllGames();
-          console.log(fetchedRooms);
+          // console.log(gameData);
+          // const fetchedRooms = await contract.getAllGames();
+          // console.log(fetchedRooms);
     
         } catch (error) {
           setErrorMessage(error);

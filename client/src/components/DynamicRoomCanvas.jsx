@@ -1,6 +1,7 @@
-import React, { Suspense, useEffect, useState } from "react";
-import { Canvas } from "@react-three/fiber";
-import {  Preload, useGLTF } from "@react-three/drei";
+import React, { Suspense, useEffect, useState, useRef } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import {  Preload, useGLTF} from "@react-three/drei";
+import * as THREE from "three";
 import CameraOrbitController from "./CameraOrbitController";
 
 const Hotel = ({ isMobile }) => {
@@ -12,7 +13,7 @@ const Hotel = ({ isMobile }) => {
       <primitive
         object={hotelModel.scene}
         scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0, -0.25, 0.25]}
+        position={isMobile ? [0, -3, -2.2] : [0, -0.25, 0.25+0.2]}
         rotation={[0,91.1,0]}
       />
     </mesh>
@@ -28,7 +29,7 @@ const Road = ({ isMobile }) => {
       <primitive
         object={roadModel.scene}
         scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0, -0.25, 0.25]}
+        position={isMobile ? [0, -3, -2.2] : [0, -0.25, 0.25+0.2]}
         rotation={[0,3.15,0]}
       />
     </mesh>
@@ -44,7 +45,7 @@ const Hallway = ({ isMobile }) => {
       <primitive
         object={hallwayModel.scene}
         scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0, -0.28, 0.18]}
+        position={isMobile ? [0, -3, -2.2] : [0, -0.28, 0.18+0.2]}
         rotation={[0,0,0]}
       />
     </mesh>
@@ -60,7 +61,7 @@ const Forest = ({ isMobile }) => {
       <primitive
         object={forestModel.scene}
         scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0, -0.25, 0.25]}
+        position={isMobile ? [0, -3, -2.2] : [0, -0.25, 0.25+0.2]}
         rotation={[0,1.55,0]}
       />
     </mesh>
@@ -76,7 +77,7 @@ const Elevator = ({ isMobile }) => {
       <primitive
         object={elevatorModel.scene}
         scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0, -0.25, 0.28]}
+        position={isMobile ? [0, -3, -2.2] : [0, -0.25, 0.28+0.2]}
         rotation={[0,4.7,0]}
       />
     </mesh>
@@ -92,7 +93,7 @@ const Bedroom = ({ isMobile }) => {
       <primitive
         object={roomModel.scene}
         scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0, -0.25, 0.25]}
+        position={isMobile ? [0, -3, -2.2] : [0, -0.25, 0.25+0.15]}
         rotation={[0,4.7,0]}
       />
     </mesh>
@@ -104,6 +105,8 @@ const DynamicRoomCanvas = ({index, ready, choice}) => {
   const [zoom, setZoom] = useState(false);
   const [focus, setFocus] = useState({});
   const [currentRoom, setCurrentRoom] = useState(<Bedroom isMobile={isMobile}/>);
+  const deg2rad = degrees => degrees * (Math.PI / 180);
+
   useEffect(()=> {
     switch (index) {
       case 3:
@@ -176,14 +179,24 @@ const DynamicRoomCanvas = ({index, ready, choice}) => {
     }
   }, [choice]);
 
+  // Mouse-camera movement
+  const Rig = () => {
+    const { camera, mouse } = useThree();
+    return useFrame(() =>
+      camera.rotation.set(
+        deg2rad(mouse.y*10), deg2rad(mouse.x*-10), camera.rotation.z
+      )
+    );
+  };
+
   return (
     <Canvas>
       <Suspense fallback={<></>}>
-        <CameraOrbitController zoom={zoom} focus={focus}/>
-        {currentRoom}
-      </Suspense>
-
-      <Preload all />
+          <CameraOrbitController zoom={zoom} focus={focus}/>
+          {currentRoom}
+        </Suspense>
+        <Rig />
+        <Preload all />
     </Canvas>
   );
   

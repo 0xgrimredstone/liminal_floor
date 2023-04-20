@@ -92,31 +92,37 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
     }
 
     // Game getter function
-    function isGame(string memory _code) public view returns (bool) {
-        if (gameInfo[_code] == 0) {
+    function isGame(string memory _gameCode) public view returns (bool) {
+        if (gameInfo[_gameCode] == 0) {
             return false;
         } else {
             return true;
         }
     }
 
-    function getGame(string memory _code) public view returns (Game memory) {
-        require(isGame(_code), "Game doesn't exist!");
-        return games[gameInfo[_code]];
+    function getGame(
+        string memory _gameCode
+    ) public view returns (Game memory) {
+        require(isGame(_gameCode), "Game doesn't exist!");
+        return games[gameInfo[_gameCode]];
     }
 
     function getAllGames() public view returns (Game[] memory) {
         return games;
     }
 
-    function updateGame(string memory _code, Game memory _newGame) private {
-        require(isGame(_code), "Game doesn't exist");
-        games[gameInfo[_code]] = _newGame;
+    function updateGame(string memory _gameCode, Game memory _newGame) private {
+        require(isGame(_gameCode), "Game doesn't exist");
+        games[gameInfo[_gameCode]] = _newGame;
     }
 
     // Events
     event NewPlayer(address indexed owner, string name);
-    event NewGame(string gameName, address indexed player);
+    event NewGame(
+        string gameName,
+        address indexed player1,
+        address indexed player2
+    );
     event RoundEnded();
     event GameEnded(string gameName, bool win);
     event GameMove(string indexed gameName);
@@ -158,31 +164,31 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
     }
 
     /// @dev Registers a player
-    /// @param _name player name; set by player
+    /// @param _gameCode player name; set by player
     function registerPlayer(
-        string memory _name,
+        string memory _gameCode,
         string memory _gameTokenName
     ) external {
         require(!isPlayer(msg.sender), "Player already registered"); // Require that player is not already registered
 
         uint256 _id = players.length;
-        players.push(Player(msg.sender, _name, false)); // Adds player to players array
+        players.push(Player(msg.sender, _gameCode, false)); // Adds player to players array
         playerInfo[msg.sender] = _id; // Creates player info mapping
 
         createRandomGameToken(_gameTokenName);
 
-        emit NewPlayer(msg.sender, _name); // Emits NewPlayer event
+        emit NewPlayer(msg.sender, _gameCode); // Emits NewPlayer event
     }
 
     /// @dev internal function to create a new Game Card
     function _createGameToken(
-        string memory _name
+        string memory _gameCode
     ) internal returns (GameToken memory) {
         // TODO: get data from map
         uint8 randId = 1;
 
         GameToken memory newGameToken = GameToken(
-            _name, // owner
+            _gameCode, // owner
             randId // id
         );
 
@@ -198,12 +204,12 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
     }
 
     /// @dev Creates a new game token
-    /// @param _code game token name; set by player
-    function createRandomGameToken(string memory _code) public {
+    /// @param _gameCode game token name; set by player
+    function createRandomGameToken(string memory _gameCode) public {
         require(!getPlayer(msg.sender).inGame, "Player is in a game"); // Require that player is not already in a game
         require(isPlayer(msg.sender), "Please Register Player First"); // Require that the player is registered
 
-        _createGameToken(_code); // Creates game token
+        _createGameToken(_gameCode); // Creates game token
     }
 
     function getTotalSupply() external view returns (uint256) {
@@ -211,21 +217,21 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
     }
 
     /// @dev Creates a new game
-    /// @param _code game name; set by player
+    /// @param _gameCode game name; set by player
     function createGame(
-        string memory _code,
+        string memory _gameCode,
         uint8 _level,
         uint8[2] memory _positon
     ) external returns (Game memory) {
         require(isPlayer(msg.sender), "Please Register Player First"); // Require that the player is registered
-        require(!isGame(_code), "Game already exists!"); // Require game with same name should not exist
+        require(!isGame(_gameCode), "Game already exists!"); // Require game with same name should not exist
 
-        bytes32 gameHash = keccak256(abi.encode(_code));
+        bytes32 gameHash = keccak256(abi.encode(_gameCode));
 
         Game memory _game = Game(
             GameStatus.PENDING, // Game pending
             gameHash, // Game hash
-            _code, // Game name
+            _gameCode, // Game name
             [msg.sender, address(0)], // player addresses
             _level,
             _positon, // current coordinate
@@ -241,35 +247,14 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
         );
 
         uint256 _id = games.length;
-        gameInfo[_code] = _id;
+        gameInfo[_gameCode] = _id;
         games.push(_game);
 
         return _game;
     }
 
-    /// @dev Player joins game
-    /// @param _name game name; name of game player wants to join
-    function joinGame(string memory _name) external returns (Game memory) {
-        Game memory _game = getGame(_name);
-
-        require(
-            _game.GameStatus == GameStatus.PENDING,
-            "Game already started!"
-        ); // Require that game has not started
-        require(
-            _game.players[0] != msg.sender,
-            "Only player two can join a game"
-        ); // Require that player 2 is joining the game
-        require(!getPlayer(msg.sender).inGame, "Already in game"); // Require that player is not already in a game
-
-        _game.players[1] = msg.sender;
-        updateGame(_name, _game);
-
-        return _game;
-    }
-
-    function startGame(string memory _code) external returns (Game memory) {
-        Game memory _game = getGame(_code);
+    function startGame(string memory _gameCode) external returns (Game memory) {
+        Game memory _game = getGame(_gameCode);
         require(
             _game.GameStatus == GameStatus.PENDING,
             "Game already started!!"
@@ -283,52 +268,78 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
             players[playerInfo[_game.players[1]]].inGame = true;
         }
 
-        emit NewGame(_code, msg.sender); // Emits NewGame event
-        updateGame(_code, _game);
+        emit NewGame(_gameCode, _game.players[0], msg.sender); // Emits NewGame event
+        updateGame(_gameCode, _game);
+        return _game;
+    }
+
+    /// @dev Player joins game
+    /// @param _gameCode game name; name of game player wants to join
+    function joinGame(string memory _gameCode) external returns (Game memory) {
+        Game memory _game = getGame(_gameCode);
+
+        require(
+            _game.GameStatus == GameStatus.PENDING,
+            "Game already started!"
+        ); // Require that game has not started
+        require(
+            _game.players[0] != msg.sender,
+            "Only player two can join a game"
+        ); // Require that player 2 is joining the game
+        require(!getPlayer(msg.sender).inGame, "Already in game"); // Require that player is not already in a game
+
+        _game.gameStatus = GameStatus.STARTED;
+        _game.players[1] = msg.sender;
+        updateGame(_gameCode, _game);
+
+        players[playerInfo[_game.players[0]]].inGame = true;
+        players[playerInfo[_game.players[1]]].inGame = true;
+
+        emit NewGame(_game.name, _game.players[0], msg.sender); // Emits NewGame event
         return _game;
     }
 
     // Read game map
     function getCurrentCoord(
-        string memory _gameName
+        string memory _gameCode
     ) public view returns (uint8[2] memory coord) {
-        Game memory _game = getGame(_gameName);
+        Game memory _game = getGame(_gameCode);
         return _game.position;
     }
 
     function _registerPlayer1Move(
-        string memory _gameName,
+        string memory _gameCode,
         uint8[2] memory _choice
     ) internal {
-        Game memory _game = getGame(_gameName);
-        uint8[2] memory prev = _game.position;
-        _game.position = _choice;
-        _game.moves[0] = true;
-        updateGame(_gameName, _game);
+        // Game memory _game = getGame(_gameCode);
+        games[gameInfo[_gameCode]].position = _choice;
+        games[gameInfo[_gameCode]].moves[0] = true;
+        // updateGame(_gameCode, _game);
     }
 
     function _registerPlayer2Move(
-        string memory _gameName,
+        string memory _gameCode,
         uint8[2] memory _choice,
         uint8 _toChange
     ) internal {
-        Game memory _game = getGame(_gameName);
-        _game.gameRotationMap[_choice[0]][_choice[1]] = _toChange;
-        _game.moves[1] = true;
-        updateGame(_gameName, _game);
+        // Game memory _game = getGame(_gameCode);
+        games[gameInfo[_gameCode]].gameRotationMap[_choice[0]][
+            _choice[1]
+        ] = _toChange;
+        games[gameInfo[_gameCode]].moves[1] = true;
+        // updateGame(_gameCode, _game);
     }
 
     // User chooses attack or defense move for game card
-    // _toChange (P1 : whether player wins (3,4), P2 : what to rotate to (0,1,2))
+    // _toChange (P1 : whether player wins (4,5), P2 : what to rotate to (0,1,2,3))
     function GameProgress(
         uint8[2] memory _choice,
         uint8 _toChange,
-        string memory _gameName
+        string memory _gameCode
     ) external {
-        Game memory _game = getGame(_gameName);
+        Game memory _game = getGame(_gameCode);
 
         require(_game.GameStatus == GameStatus.STARTED, "Game not started."); // Require that game has started
-        require(_game.GameStatus != GameStatus.ENDED, "Game has already ended"); // Require that game has not ended
         require(
             msg.sender == _game.players[0] || msg.sender == _game.players[1],
             "You are not in this game"
@@ -341,16 +352,12 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
         );
 
         if (msg.sender == _game.players[1]) {
-            _registerPlayer2Move(_gameName, _choice, _toChange);
+            _registerPlayer2Move(_gameCode, _choice, _toChange);
+            emit RoundEnded();
         } else {
-            _registerPlayer1Move(_gameName, _choice);
-        }
-
-        _game = getGame(_gameName);
-        emit GameMove(_gameName);
-        if (msg.sender == _game.players[1]) {
-            _resolveGame(_game, 0);
-        } else {
+            _registerPlayer1Move(_gameCode, _choice);
+            emit GameMove(_gameCode);
+            _game = getGame(_gameCode);
             _resolveGame(_game, _toChange);
         }
     }
@@ -364,26 +371,24 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
     /// @dev Resolve game function to determine winner and loser of game
     /// @param _game game; game to resolve
     function _resolveGame(Game memory _game, uint8 end) internal {
-        if (end >= 3) {
-            // 3 - LOSE || 4 - WIN
+        if (end >= 4) {
+            // 4 - LOSE || 5 - WIN
             _endGame(end, _game);
         }
-
-        emit RoundEnded();
-
         // Reset moves to 0
         _game.moves = [false, false];
         updateGame(_game.code, _game);
+        emit RoundEnded();
     }
 
-    function quitGame(string memory _gameName) public {
-        Game memory _game = getGame(_gameName);
+    function quitGame(string memory _gameCode) public {
+        Game memory _game = getGame(_gameCode);
         require(
             msg.sender == _game.players[0] || msg.sender == _game.players[1],
             "You are not in this game!"
         );
 
-        _endGame(3, _game);
+        _endGame(4, _game);
     }
 
     /// @dev internal function to end the game
@@ -396,13 +401,13 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
         require(_game.GameStatus != GameStatus.ENDED, "Game already ended"); // Require that game has not ended
 
         _game.GameStatus = GameStatus.ENDED;
-        _game.win = _type == 4 ? true : false;
+        _game.win = _type == 4 ? false : true;
         updateGame(_game.code, _game);
 
         players[playerInfo[_game.players[0]]].inGame = false;
         players[playerInfo[_game.players[1]]].inGame = false;
 
-        emit GameEnded(_game.code, _type == 4 ? true : false); // Emits GameEnded event
+        emit GameEnded(_game.code, _type == 4 ? false : true); // Emits GameEnded event
 
         return _game;
     }
