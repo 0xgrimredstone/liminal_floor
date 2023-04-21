@@ -1,8 +1,10 @@
-import React, { Suspense, useEffect, useState, useRef } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import {  Preload, useGLTF } from "@react-three/drei";
+import React, { Suspense, useEffect, useState, useRef, useMemo } from "react";
+import { Canvas, useFrame, useThree, useGraph, useLoader } from "@react-three/fiber";
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import {  Preload, useGLTF, Box } from "@react-three/drei";
 import * as THREE from "three";
 import CameraOrbitController from "./CameraOrbitController";
+import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
 const UpSpotlight = () => {
   const [u] = useState(() => new THREE.Object3D());
@@ -94,16 +96,6 @@ const LeftUpSpotlight = () => {
   );
 };
 
-const LeftRightSpotlight = () => {
-  const [u] = useState(() => new THREE.Object3D());
-  return (
-    <mesh>
-      <primitive object={u} position={[-1,0,0]} />
-      <spotLight target={u} position={[1,0,2]} angle={0.1} color="white" intensity={0.5} penumbra={0.1}/>
-    </mesh>
-  );
-};
-
 const UpDownSpotlight = () => {
   const [u] = useState(() => new THREE.Object3D());
   return (
@@ -143,6 +135,21 @@ const Plane = () => {
   );
 }
 
+const ArrowUpDown = ( ) => {
+  const arrowModel = useGLTF("../arrow/scene.gltf");
+  
+  return (
+    <mesh>
+      <primitive
+        object={arrowModel.scene}
+        scale={0.013}
+        position={[0.035, -0.4, 0]}
+        rotation={[1,3.14,0]}
+      />
+    </mesh>
+  );
+};
+
 const Road = ({ isMobile, position }) => {
   const roadModel = useGLTF("../road/untitled.gltf");
   
@@ -153,7 +160,7 @@ const Road = ({ isMobile, position }) => {
       <primitive
         object={roadModel.scene}
         scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0, 0, 0]}
+        position={isMobile ? [0, -3, -2.2] : [0, -0.1, 0]}
         rotation={position}
       />
     </mesh>
@@ -169,7 +176,7 @@ const Hotel = ({ isMobile, position }) => {
       <primitive
         object={hotelModel.scene}
         scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0,0,0]}
+        position={isMobile ? [0, -3, -2.2] : [0,-0.1,0]}
         rotation={position}
       />
     </mesh>
@@ -185,7 +192,7 @@ const Hallway = ({ isMobile, position }) => {
       <primitive
         object={hallwayModel.scene}
         scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0,0,0]}
+        position={isMobile ? [0, -3, -2.2] : [0,-0.1,0]}
         rotation={position}
       />
     </mesh>
@@ -201,7 +208,7 @@ const Forest = ({ isMobile, position }) => {
       <primitive
         object={forestModel.scene}
         scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0,0,0]}
+        position={isMobile ? [0, -3, -2.2] : [0,-0.1,0]}
         rotation={position}
       />
     </mesh>
@@ -217,7 +224,7 @@ const Elevator = ({ isMobile, position }) => {
       <primitive
         object={elevatorModel.scene}
         scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0,0,0]}
+        position={isMobile ? [0, -3, -2.2] : [0,-0.1,0]}
         rotation={position}
       />
     </mesh>
@@ -233,45 +240,82 @@ const Bedroom = ({ isMobile, position }) => {
       <primitive
         object={roomModel.scene}
         scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0,0,0]}
+        position={isMobile ? [0, -3, -2.2] : [0,-0.1,0]}
         rotation={position}
       />
     </mesh>
   );
 };
 
+function Arrow({ position, rotation, gltf }) {
+  
+  const arrowRef = useRef();
+
+  useEffect(() => {
+    const arrow = gltf.scene;
+    const arrowClone = SkeletonUtils.clone(arrow);
+
+    arrowClone.position.copy(position);
+    arrowClone.rotation.copy(rotation);
+
+    arrowClone.updateMatrixWorld();
+
+    arrow.parent.add(arrowClone);
+
+    return () => {
+      arrow.parent.remove(arrowClone);
+    };
+  }, [position, rotation, gltf.scene]);
+
+  return (
+    <primitive ref={arrowRef} object={gltf.scene} scale={0.013} position={position} rotation={rotation}/>
+  );
+}
+
 
 const DynamicRoomMap = ({index, directionAll, ready, choice, direction}) => {
   const [isMobile, setIsMobile] = useState(false);
   const [focus, setFocus] = useState({x:0, y:0, z:0.5});
   const [lastChoice, setLastChoice] = useState(0);
-  const [position, setPosition] = useState([1.5,0,0]);
+  const [position, setPosition] = useState([1.2,0,0]);
   const [currentRoom, setCurrentRoom] = useState(<Bedroom isMobile={isMobile} position={position}/>);
   
   useEffect(()=> {
+    let pos = position;
+    if(choice > lastChoice) {
+      setPosition([1.5,(position[1]+1.57)%6.28,0]);
+      pos = [1.5,(position[1]+1.57)%6.28,0];
+      setLastChoice(choice);
+    }
+    else if (choice < lastChoice){
+      setPosition([1.5,(position[1]-1.57)%6.28,0]);
+      pos = [1.5,(position[1]-1.57)%6.28,0]
+      setLastChoice(choice);
+    }
+
     switch (index) {
       case 3:
-        setCurrentRoom(<Hotel isMobile={isMobile} position={position}/>)
+        setCurrentRoom(<Hotel isMobile={isMobile} position={pos}/>)
         break;
       case 4:
-        setCurrentRoom(<Road isMobile={isMobile} position={position}/>)
+        setCurrentRoom(<Road isMobile={isMobile} position={pos}/>)
         break;
       case 5:
-        setCurrentRoom(<Forest isMobile={isMobile} position={position}/>)
+        setCurrentRoom(<Forest isMobile={isMobile} position={pos}/>)
         break;
       case 6:
-        setCurrentRoom(<Bedroom isMobile={isMobile} position={position}/>)
+        setCurrentRoom(<Bedroom isMobile={isMobile} position={pos}/>)
         break;
       case 7:
-        setCurrentRoom(<Hallway isMobile={isMobile} position={position}/>)
+        setCurrentRoom(<Hallway isMobile={isMobile} position={pos}/>)
         break;
       case 8:
-        setCurrentRoom(<Elevator isMobile={isMobile} position={position}/>)
+        setCurrentRoom(<Elevator isMobile={isMobile} position={pos}/>)
         break;
       default:
         break;
     }
-  },[index])
+  },[index,choice])
 
   useEffect(() => {
     // Add a listener for changes to the screen size
@@ -294,37 +338,47 @@ const DynamicRoomMap = ({index, directionAll, ready, choice, direction}) => {
     };
   }, []);
 
-  useEffect(()=> {
-    if(choice > lastChoice) {
-      setPosition([1.5,(position[1]+1.57)%6.28,0]);
-      setLastChoice(choice);
-    }
-    else if (choice < lastChoice){
-      setPosition([1.5,(position[1]-1.57)%6.28,0]);
-      setLastChoice(choice);
-    }
-  }, [choice])
+  // const Arrow = ({position, rotation}) => {
+  //   const {scene, materials, animations} = useGLTF("../arrow/scene.gltf");
+  //   const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
+  //   const { nodes } = useGraph(clone);
+  //   return (
+  //   <mesh>
+  //     <primitive
+  //       object={nodes}
+  //       position={position}
+  //       scale={0.013}
+  //       rotation={rotation}
+  //     />
+  //   </mesh>
+  //   );
+  // };
+  
 
+  
+
+  const gltf = useLoader(GLTFLoader, '../arrow/scene.gltf');
   return (
     <Canvas>
-      <Suspense fallback={<></>}>
+      <Suspense fallback={null}>
         <CameraOrbitController zoom={false} focus={focus}/>
         {currentRoom}
         <Plane/>
         
-        {direction[0] && <UpSpotlight/>}
-        {direction[1] && <LeftSpotlight/>}
-        {direction[2] && <RightSpotlight/>}
-        {direction[3] && <DownSpotlight/>}
+        
+        {direction[0] && <Box scale={0.05} position={[-0.026, 0.25, 0]} rotation={[1.5,0.8,0]} />}
+        {direction[1] && <Box scale={0.05} position={[-0.4, 0, 0]} rotation={[1.57,1.57,0]} />}
+        {direction[2] && <Box scale={0.013} position={[0.4, 0, 0]} rotation={[1.7,-1.57,0]} />}
+        {direction[3] && <Box scale={0.05} position={[0.035, -0.4, 0]} rotation={[1,3.14,0]} />}
         {directionAll[0][0] && <LeftUpSpotlight/>}
-        {directionAll[0][2] && <LeftRightSpotlight/>}
+        {directionAll[0][2] && <Box scale={0.05} position={[-0.7,0,0]} rotation={[1.5,0.8,0]} />}
         {directionAll[0][3] && <LeftDownSpotlight/>}
         {directionAll[1][0] && <RightUpSpotlight/>}
-        {directionAll[1][1] && <RightLeftSpotlight/>}
+        {directionAll[1][1] && <Box scale={0.05} position={[0.7,0,0]} rotation={[1.5,0.8,0]} />}
         {directionAll[1][3] && <RightDownSpotlight/>}
         {directionAll[2][1] && <UpLeftSpotlight/>}
         {directionAll[2][2] && <UpRightSpotlight/>}
-        {directionAll[2][3] && <UpDownSpotlight/>}
+        {/* {directionAll[2][3] && <ArrowUp position={[0.1,0.1,0.1]}/>} */}
       </Suspense>
       <Preload all />
     </Canvas>

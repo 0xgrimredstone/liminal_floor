@@ -288,14 +288,14 @@ contract LiminalFloor is ERC1155, Ownable, ERC1155Supply {
         ); // Require that player 2 is joining the game
         require(!getPlayer(msg.sender).inGame, "Already in game"); // Require that player is not already in a game
 
-        _game.gameStatus = GameStatus.STARTED;
+        _game.GameStatus = GameStatus.STARTED;
         _game.players[1] = msg.sender;
         updateGame(_gameCode, _game);
 
         players[playerInfo[_game.players[0]]].inGame = true;
         players[playerInfo[_game.players[1]]].inGame = true;
 
-        emit NewGame(_game.name, _game.players[0], msg.sender); // Emits NewGame event
+        emit NewGame(_gameCode, _game.players[0], msg.sender); // Emits NewGame event
         return _game;
     }
 

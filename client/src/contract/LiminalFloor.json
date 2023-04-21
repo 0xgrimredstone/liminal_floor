@@ -83,7 +83,13 @@
 				{
 					"indexed": true,
 					"internalType": "address",
-					"name": "player",
+					"name": "player1",
+					"type": "address"
+				},
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "player2",
 					"type": "address"
 				}
 			],

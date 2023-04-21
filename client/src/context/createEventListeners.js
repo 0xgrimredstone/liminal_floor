@@ -35,9 +35,7 @@ export const createEventListeners = (
   const NewRoomEventFilter = contract.filters.NewGame();
   AddNewEvent( NewRoomEventFilter, provider, ( { args } ) => {
     console.log( 'New Level started!', args, walletAddress );
-    // if ( walletAddress.toLowerCase() === args.player1.toLowerCase() || walletAddress.toLowerCase() === args.player2.toLowerCase() ) {
-
-    if ( walletAddress.toLowerCase() === args.player.toLowerCase() ) {
+    if ( walletAddress.toLowerCase() === args.player1.toLowerCase() || walletAddress.toLowerCase() === args.player2.toLowerCase() ) {
       navigate( `/room/${args.gameName}` );
     }
 
@@ -76,7 +74,7 @@ export const createEventListeners = (
   const BattleEndedEventFilter = contract.filters.GameEnded();
   AddNewEvent( BattleEndedEventFilter, provider, ( { args } ) => {
     console.log( "GAME OVER" );
-    if ( !args.win ) {
+    if ( args.win ) {
       navigate( '/won' );
       playAudio( win );
     } else {

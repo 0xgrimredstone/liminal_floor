@@ -1,21 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import {Player1Room, Player2Room, Player1w2Room, Loader2} from '../components';
+import {Player1Room, Player2Room, Player1w2Room, Loader2, Alert} from '../components';
 import { useGlobalContext } from '../context';
 import styles from '../styles';
-import Alert from '../components/Alert';
 
 const Room = () => {
-  // info
-  const { walletAddress, contract, gameData, setErrorMessage, showAlert, setShowAlert } = useGlobalContext();
+  // get the context to access state and functions
+  const { 
+    walletAddress, 
+    contract, 
+    gameData, 
+    setErrorMessage, 
+    showAlert 
+  } = useGlobalContext();
+
   const [isPlayer, setIsPlayer] = useState(0);
   const [isMultiplayer, setIsMultiplayer] = useState(false);
 
-  // initial setup
+  // fetch player info from contract and set player state
   useEffect(() => {
     const getPlayerInfo = async () => {
       try {
-        console.log(walletAddress);
-        // save players locally
         if (gameData.activeRoom.players[0].toLowerCase() === walletAddress.toLowerCase()) {
           setIsPlayer(1);
           if (gameData.activeRoom.players[1].toLowerCase() === '0x0000000000000000000000000000000000000000') {
@@ -28,13 +32,11 @@ const Room = () => {
         else if (gameData.activeRoom.players[1].toLowerCase() === walletAddress.toLowerCase()) {
           setIsPlayer(2);
         }
-
       } catch (error) {
         console.log(error);
         setErrorMessage(error.message);
       }
     };
-
     if (contract && gameData.activeRoom) getPlayerInfo();
   }, [contract, walletAddress, gameData]);
 

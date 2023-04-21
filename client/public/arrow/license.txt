@@ -1,0 +1,11 @@
+Model Information:
+* title:	Arrow FBX Import GLTF Export 01
+* source:	https://sketchfab.com/3d-models/arrow-fbx-import-gltf-export-01-8fb01cf82ed9434db309e29af2de8bdb
+* author:	joey.doherty (https://sketchfab.com/joey.doherty)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Arrow FBX Import GLTF Export 01" (https://sketchfab.com/3d-models/arrow-fbx-import-gltf-export-01-8fb01cf82ed9434db309e29af2de8bdb) by joey.doherty (https://sketchfab.com/joey.doherty) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

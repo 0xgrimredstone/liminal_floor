@@ -32,6 +32,11 @@ const GameOver = ({type}) => {
                 }}
                 restStyles="mt-6"
               />
+              <CustomButton
+                title="Mint this NFT"
+                handleClick={() => {}}
+                restStyles="mt-6"
+              />
             </div>
           </div>
        </FadeIn>

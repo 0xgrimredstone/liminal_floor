@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 
 import CustomButton from './CustomButton';
 import { useGlobalContext } from '../context';
-import { alertIcon, gameRules } from '../assets';
+import { alertIcon, gameRules, gameRules1, gameRules2 } from '../assets';
 import styles from '../styles';
 
-const GameInfo = () => {
+const GameInfo = ({gameInfo, isInitial}) => {
   const { contract, gameData, setShowAlert, setErrorMessage } = useGlobalContext();
-  const [toggleSidebar, setToggleSidebar] = useState(true);
+  const [toggleSidebar, setToggleSidebar] = useState(isInitial);
   const navigate = useNavigate();
 
   const handleGameExit = async () => {
@@ -53,11 +53,25 @@ const GameInfo = () => {
           <h3 className={styles.gameInfoHeading}>Game Rules:</h3>
 
           <div className="mt-3">
-            {gameRules.map((rule, index) => (
-              <p key={`game-rule-${index}`} className={styles.gameInfoText}>
-                <span className="font-bold">{index + 1}</span>. {rule}
-              </p>
-            ))}
+            {gameInfo == 0 ? (
+              gameRules.map((rule, index) => (
+                <p key={`game-rule-${index}`} className={styles.gameInfoText}>
+                  <span className="font-bold">{index + 1}</span>. {rule}
+                </p>
+              ))
+            ) : gameInfo == 1 ? (
+              gameRules1.map((rule, index) => (
+                <p key={`game-rule-${index}`} className={styles.gameInfoText}>
+                  <span className="font-bold">{index + 1}</span>. {rule}
+                </p>
+              ))
+            ) : (
+              gameRules2.map((rule, index) => (
+                <p key={`game-rule-${index}`} className={styles.gameInfoText}>
+                  <span className="font-bold">{index + 1}</span>. {rule}
+                </p>
+              ))
+            )}
           </div>
         </div>
 
