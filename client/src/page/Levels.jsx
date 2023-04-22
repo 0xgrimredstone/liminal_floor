@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 
 import styles from '../styles';
 import { Alert } from '../components';
-import { levels } from '../assets/levels';
 import { useGlobalContext } from '../context';
+import {levels} from '../assets';
 
 const Levels = () => {
   const navigate = useNavigate();

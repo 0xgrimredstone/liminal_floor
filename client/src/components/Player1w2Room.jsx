@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { useGlobalContext } from '../context';
-import { levels } from '../assets/levels';
 
 import styles from "../styles";
+import {levels} from '../assets';
 import { ActionButton, GameInfo, FadeIn, DynamicRoomCanvas, Loader2 } from '../components';
 import { faChevronRight, faChevronLeft, faChevronUp } from '@fortawesome/free-solid-svg-icons'
 import { playAudio } from '../utils/animation.js';
@@ -136,7 +136,7 @@ const Player1w2Room = () => {
     let dir = [false, false, false, false] // up, left, right, down
     let pers = {up: [1,0], left: [0,1], right: [0,-1]};  // default pers
 
-    switch(gameData.activeRoom.gameRotationMap[pos[0]][pos[1]]){
+    switch(levels[gameData.activeRoom.level].rotMap[pos[0]][pos[1]]){
       case 1:
         dir = rotate1(determineDir(map[pos[0]][pos[1]]));
         pers = {up: [0,1], left: [-1,0], right: [1,0]};
@@ -154,7 +154,7 @@ const Player1w2Room = () => {
         break;
     }
 
-    // console.log("rotated: "+gameData.activeRoom.gameRotationMap[pos[0]][pos[1]]+" so direction: "+direction+" and pers: "+pers.up+" "+pers.left+" "+pers.right);
+    // console.log("rotated: "+levels[gameData.activeRoom.level].rotMap[pos[0]][pos[1]]+" so direction: "+direction+" and pers: "+pers.up+" "+pers.left+" "+pers.right);
     
     // Check if tiles in the available directions are movable and set the corresponding availability flags
     let posUp0 = pos[0] + pers.up[0];
@@ -233,7 +233,7 @@ const Player1w2Room = () => {
       await contract.GameProgress(newPosition, outcome, name, { gasLimit: 500000 });
 
       // successfully made a move, update front-end
-      if(isFullyRendered) setFullyRendered(false);
+      // if(isFullyRendered) setFullyRendered(false);
       updateButtonsnDepth();
       setCameraPos(choice); // pass choice to move different direction
       playAudio(footstep);

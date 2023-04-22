@@ -1,384 +1,227 @@
 import React, { Suspense, useEffect, useState, useRef, useMemo } from "react";
 import { Canvas, useFrame, useThree, useGraph, useLoader } from "@react-three/fiber";
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import {  Preload, useGLTF, Box } from "@react-three/drei";
-import * as THREE from "three";
-import CameraOrbitController from "./CameraOrbitController";
-import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+import {  OrbitControls, Preload, useGLTF, Cone } from "@react-three/drei";
+import { Vector3 } from 'three';
+import Loader from './Loader';
+import { faLessThan } from "@fortawesome/free-solid-svg-icons";
 
-const UpSpotlight = () => {
-  const [u] = useState(() => new THREE.Object3D());
-  return (
-    <mesh>
-      <primitive object={u} position={[0,0.2,0]} />
-      <spotLight target={u} position={[0,-1,2]} angle={0.1} color="white" intensity={0.5} penumbra={0.1}/>
-    </mesh>
-  );
-};
-
-const DownSpotlight = () => {
-  const [u] = useState(() => new THREE.Object3D());
-  return (
-    <mesh>
-      <primitive object={u} position={[0,-0.2,0]} />
-      <spotLight target={u} position={[0,1,2]} angle={0.1} color="white" intensity={0.5} penumbra={0.1}/>
-    </mesh>
-  );
-};
-
-const LeftSpotlight = () => {
-  const [u] = useState(() => new THREE.Object3D());
-  return (
-    <mesh>
-      <primitive object={u} position={[-0.2,0,0]} />
-      <spotLight target={u} position={[1,0,2]} angle={0.1} color="white" intensity={0.5} penumbra={0.1}/>
-    </mesh>
-  );
-};
-
-const RightSpotlight = () => {
-  const [u] = useState(() => new THREE.Object3D());
-  return (
-    <mesh>
-      <primitive object={u} position={[0.2,0,0]} />
-      <spotLight target={u} position={[-1,0,2]} angle={0.1} color="white" intensity={0.5} penumbra={0.1}/>
-    </mesh>
-  );
-};
-
-const RightLeftSpotlight = () => {
-  const [u] = useState(() => new THREE.Object3D());
-  return (
-    <mesh>
-      <primitive object={u} position={[1,0,0]} />
-      <spotLight target={u} position={[-1,0,2]} angle={0.1} color="white" intensity={0.5} penumbra={0.1}/>
-    </mesh>
-  );
-};
-
-const RightDownSpotlight = () => {
-  const [u] = useState(() => new THREE.Object3D());
-  return (
-    <mesh>
-      <primitive object={u} position={[1.1,-0.5,0]} />
-      <spotLight target={u} position={[1.1,1,2]} angle={0.1} color="white" intensity={0.5} penumbra={0.1}/>
-    </mesh>
-  );
-};
-
-const RightUpSpotlight = () => {
-  const [u] = useState(() => new THREE.Object3D());
-  return (
-    <mesh>
-      <primitive object={u} position={[1.1,0.5,0]} />
-      <spotLight target={u} position={[1.1,-1,2]} angle={0.1} color="white" intensity={0.5} penumbra={0.1}/>
-    </mesh>
-  );
-};
-
-const LeftDownSpotlight = () => {
-  const [u] = useState(() => new THREE.Object3D());
-  return (
-    <mesh>
-      <primitive object={u} position={[-1.1,-0.5,0]} />
-      <spotLight target={u} position={[-1.1,1,2]} angle={0.1} color="white" intensity={0.5} penumbra={0.1}/>
-    </mesh>
-  );
-};
-
-const LeftUpSpotlight = () => {
-  const [u] = useState(() => new THREE.Object3D());
-  return (
-    <mesh>
-      <primitive object={u} position={[-1.1,0.5,0]} />
-      <spotLight target={u} position={[-1.1,-1,2]} angle={0.1} color="white" intensity={0.5} penumbra={0.1}/>
-    </mesh>
-  );
-};
-
-const UpDownSpotlight = () => {
-  const [u] = useState(() => new THREE.Object3D());
-  return (
-    <mesh>
-      <primitive object={u} position={[0,1,0]} />
-      <spotLight target={u} position={[0,-1,2]} angle={0.1} color="white" intensity={0.5} penumbra={0.1}/>
-    </mesh>
-  );
-};
-
-const UpLeftSpotlight = () => {
-  const [u] = useState(() => new THREE.Object3D());
-  return (
-    <mesh>
-      <primitive object={u} position={[-0.5,1,0]} />
-      <spotLight target={u} position={[-2,1,1]} angle={0.1} color="white" intensity={0.5} penumbra={0.1}/>
-    </mesh>
-  );
-};
-
-const UpRightSpotlight = () => {
-  const [u] = useState(() => new THREE.Object3D());
-  return (
-    <mesh>
-      <primitive object={u} position={[0.5,1,0]} />
-      <spotLight target={u} position={[2,1,1]} angle={0.1} color="white" intensity={0.5} penumbra={0.1}/>
-    </mesh>
-  );
-};
-
-const Plane = () => {
-  return(
-    <mesh>
-      <planeGeometry args={[2, 2]} />
-      <meshStandardMaterial color="#a56879" />
-    </mesh>
-  );
-}
-
-const ArrowUpDown = ( ) => {
-  const arrowModel = useGLTF("../arrow/scene.gltf");
-  
-  return (
-    <mesh>
-      <primitive
-        object={arrowModel.scene}
-        scale={0.013}
-        position={[0.035, -0.4, 0]}
-        rotation={[1,3.14,0]}
-      />
-    </mesh>
-  );
-};
-
-const Road = ({ isMobile, position }) => {
-  const roadModel = useGLTF("../road/untitled.gltf");
-  
+const Model = ({obj, rot, pos}) => {
   return (
     <mesh>
       <hemisphereLight intensity={0.15} groundColor='black' />
       <pointLight intensity={0.1} />
       <primitive
-        object={roadModel.scene}
-        scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0, -0.1, 0]}
-        rotation={position}
-      />
+          object={obj.scene}
+          castShadow
+          receiveShadow
+          scale={5}
+          rotation={rot}
+          position={pos}
+        />
     </mesh>
-  );
-};
+  )
+}
 
-const Hotel = ({ isMobile, position }) => {
+const CustomCone = ({pos, rot, ok}) => {
+  let col = ok? "lime" : "hotpink";
+  return (
+    <Cone position={pos} rotation={rot} material-color={col} args={[0.5,1.5]}/>
+  );
+}
+
+const DynamicRoomMap = ({wholeMap, P1Position, commitedRot, rotChoice, directionAll}) => {
+  // const ref = useRef();
+  const roomModel=useGLTF("../room/untitled.gltf");
   const hotelModel = useGLTF("../hotel/scene.gltf");
-  return (
-    <mesh>
-      <hemisphereLight intensity={0.15} groundColor='black' />
-      <pointLight intensity={0.1} />
-      <primitive
-        object={hotelModel.scene}
-        scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0,-0.1,0]}
-        rotation={position}
-      />
-    </mesh>
-  );
-};
-
-const Hallway = ({ isMobile, position }) => {
-  const hallwayModel = useGLTF("../hallway/untitled.gltf");
-  return (
-    <mesh>
-      <hemisphereLight intensity={0.15} groundColor='black' />
-      <pointLight intensity={0.1} />
-      <primitive
-        object={hallwayModel.scene}
-        scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0,-0.1,0]}
-        rotation={position}
-      />
-    </mesh>
-  );
-};
-
-const Forest = ({ isMobile, position }) => {
+  const roadModel = useGLTF("../road/untitled.gltf");
   const forestModel = useGLTF("../forest/untitled.gltf");
-  return (
-    <mesh>
-      <hemisphereLight intensity={0.15} groundColor='black' />
-      <pointLight intensity={0.1} />
-      <primitive
-        object={forestModel.scene}
-        scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0,-0.1,0]}
-        rotation={position}
-      />
-    </mesh>
-  );
-};
-
-const Elevator = ({ isMobile, position }) => {
+  const hallwayModel = useGLTF("../hallway/untitled.gltf");
   const elevatorModel = useGLTF("../elevator/untitled.gltf");
-  return (
-    <mesh>
-      <hemisphereLight intensity={0.15} groundColor='black' />
-      <pointLight intensity={0.1} />
-      <primitive
-        object={elevatorModel.scene}
-        scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0,-0.1,0]}
-        rotation={position}
-      />
-    </mesh>
-  );
-};
+  const gustavModel = useGLTF("../gustav/scene.gltf");
+  const stairsModel = useGLTF("../stairs/scene.gltf");
+  const [currRoom, setCurrRoom] = useState(<Model obj={roomModel} rot={[0,0,0]}/>);
+  const [otherModels, setOtherModels] = useState(<></>)
+  const [dirToLook, setDirToLook] = useState([false, false, false, false]);
 
-const Bedroom = ({ isMobile, position }) => {
-  const roomModel = useGLTF("../room/untitled.gltf");
-  return (
-    <mesh>
-      <hemisphereLight intensity={0.15} groundColor='black' />
-      <pointLight intensity={0.1} />
-      <primitive
-        object={roomModel.scene}
-        scale={isMobile ? 0.4 : 0.6}
-        position={isMobile ? [0, -3, -2.2] : [0,-0.1,0]}
-        rotation={position}
-      />
-    </mesh>
-  );
-};
-
-function Arrow({ position, rotation, gltf }) {
-  
-  const arrowRef = useRef();
-
-  useEffect(() => {
-    const arrow = gltf.scene;
-    const arrowClone = SkeletonUtils.clone(arrow);
-
-    arrowClone.position.copy(position);
-    arrowClone.rotation.copy(rotation);
-
-    arrowClone.updateMatrixWorld();
-
-    arrow.parent.add(arrowClone);
-
-    return () => {
-      arrow.parent.remove(arrowClone);
-    };
-  }, [position, rotation, gltf.scene]);
-
-  return (
-    <primitive ref={arrowRef} object={gltf.scene} scale={0.013} position={position} rotation={rotation}/>
-  );
-}
-
-
-const DynamicRoomMap = ({index, directionAll, ready, choice, direction}) => {
-  const [isMobile, setIsMobile] = useState(false);
-  const [focus, setFocus] = useState({x:0, y:0, z:0.5});
-  const [lastChoice, setLastChoice] = useState(0);
-  const [position, setPosition] = useState([1.2,0,0]);
-  const [currentRoom, setCurrentRoom] = useState(<Bedroom isMobile={isMobile} position={position}/>);
-  
-  useEffect(()=> {
-    let pos = position;
-    if(choice > lastChoice) {
-      setPosition([1.5,(position[1]+1.57)%6.28,0]);
-      pos = [1.5,(position[1]+1.57)%6.28,0];
-      setLastChoice(choice);
+  const getRoomModel = (index, rotation, position) => {
+    try{
+      let result;
+      switch (index) {
+        case 1:
+          result=(<Suspense fallback={<Loader/>}>
+              <Model 
+                obj={stairsModel}
+                rot={rotation}
+                pos={position}
+              />
+          </Suspense>
+          )
+          break;
+        case 2:
+          result=(<Suspense fallback={<Loader/>}>
+              <Model 
+                obj={gustavModel}
+                rot={rotation}
+                pos={position}
+              />
+          </Suspense>
+          )
+          break;
+        case 3:
+          result=(<Suspense fallback={<Loader/>}>
+              <Model 
+                obj={hotelModel}
+                rot={rotation}
+                pos={position}
+              />
+          </Suspense>
+          )
+          break;
+        case 4:
+          result=(<Suspense fallback={<Loader/>}>
+              <Model 
+                obj={roadModel}
+                rot={rotation}
+                pos={position}
+              />
+          </Suspense>
+          )
+          break;
+        case 5:
+          result=(<Suspense fallback={<Loader/>}>
+              <Model 
+                obj={forestModel}
+                rot={rotation}
+                pos={position}
+              />
+          </Suspense>
+          )
+          break;
+        case 6:
+          result=(<Suspense fallback={<Loader/>}>
+              <Model 
+                obj={roomModel}
+                rot={rotation}
+                pos={position}
+              />
+          </Suspense>
+          )
+          break;
+        case 7:
+          result=(<Suspense fallback={<Loader/>}>
+              <Model 
+                obj={hallwayModel} 
+                rot={rotation}
+                pos={position}
+              />
+          </Suspense>
+          )
+          break;
+        case 8:
+          result=(<Suspense fallback={<Loader/>}>
+              <Model 
+                obj={elevatorModel}
+                rot={rotation}
+                pos={position}
+              />
+          </Suspense>
+          )
+          break;
+        default:
+          result=<></>
+          break;
+      }
+      return result;
+    } catch (error){
+      console.log(error);
     }
-    else if (choice < lastChoice){
-      setPosition([1.5,(position[1]-1.57)%6.28,0]);
-      pos = [1.5,(position[1]-1.57)%6.28,0]
-      setLastChoice(choice);
-    }
-
+  }
+  const getRotationValue = (index) => {
+    let newRot;
     switch (index) {
+      case 0:
+        newRot = [0,0,0];
+        break;
+      case 1:
+        newRot = [0,1.57,0];
+        break;
+      case 2:
+        newRot = [0,3.14,0];
+        break;
       case 3:
-        setCurrentRoom(<Hotel isMobile={isMobile} position={pos}/>)
-        break;
-      case 4:
-        setCurrentRoom(<Road isMobile={isMobile} position={pos}/>)
-        break;
-      case 5:
-        setCurrentRoom(<Forest isMobile={isMobile} position={pos}/>)
-        break;
-      case 6:
-        setCurrentRoom(<Bedroom isMobile={isMobile} position={pos}/>)
-        break;
-      case 7:
-        setCurrentRoom(<Hallway isMobile={isMobile} position={pos}/>)
-        break;
-      case 8:
-        setCurrentRoom(<Elevator isMobile={isMobile} position={pos}/>)
+        newRot = [0,4.71,0];
         break;
       default:
         break;
     }
-  },[index,choice])
+    return newRot;
+  }
+
+  // When P1 has moved, set new round for P2
+  useEffect( ()=> {
+    let temp = [];
+    let counter = 0;
+    for (let i = -1; i < 2; i++) {
+      for (let j = -1; j < 2; j++) {
+        if (i == 0 && j == 0) continue;
+        else if (P1Position[0]+i >= 5 || P1Position[0]+i < 0 || P1Position[1]+j >= 5 || P1Position[1]+j < 0) continue;
+        else if (wholeMap[P1Position[0]+i][P1Position+j] == 0) continue;
+
+        counter++;
+        // console.log("dynamic room rot: "+getRotationValue(commitedRot[P1Position[0]+i][P1Position[1]+j]))
+        temp.push(getRoomModel( 
+          wholeMap[P1Position[0]+i][P1Position[1]+j], 
+          getRotationValue(commitedRot[P1Position[0]+i][P1Position[1]+j]), 
+          [i*8,0,j*8] 
+        ));
+      }
+    }
+
+    setOtherModels(<>
+      {temp.map((obj, key) => {return obj})}
+    </>)
+    // console.log(directionAll);
+  },[P1Position, commitedRot])
 
   useEffect(() => {
-    // Add a listener for changes to the screen size
-    const mediaQuery = window.matchMedia("(max-width: 500px)");
+    console.log(directionAll);
+    if (directionAll[4]){
+      setDirToLook([
+        directionAll[4][0] == 1 ? (directionAll[3][3] == 1 ? 2 : 1) : 0,
+        directionAll[4][1] == 1 ? (directionAll[1][2] == 1 ? 2 : 1) : 0,
+        directionAll[4][2] == 1 ? (directionAll[7][1] == 1 ? 2 : 1) : 0,
+        directionAll[4][3] == 1 ? (directionAll[5][0] == 1 ? 2 : 1) : 0,
+      ]);
+    }
+  },[directionAll])
 
-    // Set the initial value of the `isMobile` state variable
-    setIsMobile(mediaQuery.matches);
+  // Switch case when P2 wants to see different rotations
+  useEffect(() => {
 
-    // Define a callback function to handle changes to the media query
-    const handleMediaQueryChange = (event) => {
-      setIsMobile(event.matches);
-    };
+    setCurrRoom(
+      getRoomModel( 
+        wholeMap[P1Position[0]][P1Position[1]], 
+        getRotationValue(rotChoice % 4 < 0 ? rotChoice % 4 + 4 : rotChoice % 4), 
+        [0,0,0] 
+      ) 
+    );
+  },[rotChoice])
 
-    // Add the callback function as a listener for changes to the media query
-    mediaQuery.addEventListener("change", handleMediaQueryChange);
-
-    // Remove the listener when the component is unmounted
-    return () => {
-      mediaQuery.removeEventListener("change", handleMediaQueryChange);
-    };
-  }, []);
-
-  // const Arrow = ({position, rotation}) => {
-  //   const {scene, materials, animations} = useGLTF("../arrow/scene.gltf");
-  //   const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
-  //   const { nodes } = useGraph(clone);
-  //   return (
-  //   <mesh>
-  //     <primitive
-  //       object={nodes}
-  //       position={position}
-  //       scale={0.013}
-  //       rotation={rotation}
-  //     />
-  //   </mesh>
-  //   );
-  // };
-  
-
-  
-
-  const gltf = useLoader(GLTFLoader, '../arrow/scene.gltf');
   return (
-    <Canvas>
-      <Suspense fallback={null}>
-        <CameraOrbitController zoom={false} focus={focus}/>
-        {currentRoom}
-        <Plane/>
-        
-        
-        {direction[0] && <Box scale={0.05} position={[-0.026, 0.25, 0]} rotation={[1.5,0.8,0]} />}
-        {direction[1] && <Box scale={0.05} position={[-0.4, 0, 0]} rotation={[1.57,1.57,0]} />}
-        {direction[2] && <Box scale={0.013} position={[0.4, 0, 0]} rotation={[1.7,-1.57,0]} />}
-        {direction[3] && <Box scale={0.05} position={[0.035, -0.4, 0]} rotation={[1,3.14,0]} />}
-        {directionAll[0][0] && <LeftUpSpotlight/>}
-        {directionAll[0][2] && <Box scale={0.05} position={[-0.7,0,0]} rotation={[1.5,0.8,0]} />}
-        {directionAll[0][3] && <LeftDownSpotlight/>}
-        {directionAll[1][0] && <RightUpSpotlight/>}
-        {directionAll[1][1] && <Box scale={0.05} position={[0.7,0,0]} rotation={[1.5,0.8,0]} />}
-        {directionAll[1][3] && <RightDownSpotlight/>}
-        {directionAll[2][1] && <UpLeftSpotlight/>}
-        {directionAll[2][2] && <UpRightSpotlight/>}
-        {/* {directionAll[2][3] && <ArrowUp position={[0.1,0.1,0.1]}/>} */}
+    <Canvas
+      frameloop='demand'
+      shadows
+      dpr={[1, 2]}
+      camera={{ position: [-10, 15, 10] }}
+    >
+      <Suspense fallback={<Loader/>}>
+        <OrbitControls target={[0, 1, 0]}/>
+        {otherModels}
+        {currRoom}
+        {dirToLook[0] > 0 && <CustomCone pos={[0,1,-5]} rot={[-1.57,0,0]} ok={dirToLook[0] == 2 ? true : false}/>}
+        {dirToLook[1] > 0 && <CustomCone pos={[-5,1,0]} rot={[-1.57,0,1.57]} ok={dirToLook[1] == 2 ? true : false}/>}
+        {dirToLook[2] > 0 && <CustomCone pos={[5,1,0]} rot={[-1.57,0,-1.57]} ok={dirToLook[2] == 2 ? true : false}/>}
+        {dirToLook[3] > 0 && <CustomCone pos={[0,1,5]} rot={[1.57,0,0]} ok={dirToLook[3] == 2 ? true : false}/>}
       </Suspense>
       <Preload all />
     </Canvas>

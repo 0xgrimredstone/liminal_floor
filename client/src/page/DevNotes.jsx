@@ -1,35 +1,41 @@
 import React from 'react';
-import {PageHOC} from '../components';
+import { useNavigate } from 'react-router-dom';
 import {useGlobalContext} from '../context';
 import styles from '../styles';
+import { logo } from '../assets';
 
 const DevNotes = () => {
-  const {} = useGlobalContext();
-  
+   const { showAlert } = useGlobalContext();
+   const navigate = useNavigate();
   return (
-    <div>
-        <h3 className={styles.joinHeadText}>What's Liminal Floor?</h3>
-        <p className={styles.normalText}>Liminal Floor started out as a <a href="https://opensea.io/collection/liminal-floor" styles={styles.infoText}>puzzle collection</a> investigating how fear can be created in under 64 voxels <br/>Realising that the NFT gaming space still has much to develop, I decided to develop the collection into an immersive experience to further investigate how to play with fear</p>
-        <br/>
-        <h3 className={styles.joinHeadText}>How to play?</h3>
-        <p className={styles.normalText}>1. Register your wallet as a player<br/>2. Select a level<br/>3. If you're bringing friends, share the room code with them<br/>4. Find your way out</p>
-
+    <div className={styles.hocContainer}>
+      {showAlert?.status && <Alert type={showAlert.type} message={showAlert.message} />}
+        <div className={styles.hocContentBox}>
+            <img src={logo} alt="logo" className={styles.hocLogo} onClick={() => navigate('/')} />
+            <div className={styles.hocBodyWrapper}>
+              <div className="flex flex-row w-full">
+                  <h1 className={`flex ${styles.headText} head-text mt-10`}>Developer's Notes</h1>
+              </div>
+              <div className={"my-10"}>
+                  <h3 className={styles.joinHeadText}>What's Liminal Floor?</h3>
+                  <p className={styles.normalText}>Liminal Floor started out as a <a href="https://opensea.io/collection/liminal-floor" styles={styles.infoText}>puzzle collection</a> investigating how fear can be created in under 64 voxels <br/>Realising that the NFT gaming space still has much to develop, I decided to develop the collection into an immersive experience to further investigate how to play with fear</p>
+                  <br/>
+                  <h3 className={styles.joinHeadText}>How to play?</h3>
+                  <p className={styles.normalText}>1. Register your wallet as a player<br/>2. Select a level<br/>3. If you're bringing friends, share the room code with them<br/>4. Find your way out</p>
+              </div>
+            </div>
+            <div className={`${styles.footerText} my-10`}>
+              <p>Thank you so much for trying this little passion project out!</p>
+              <a className={styles.infoText} href="https://twitter.com/0xgrimredstone">Made with 💛 by 0xgrimredstone</a>
+              <br/>
+              <a className={styles.infoText} href="https://www.youtube.com/watch?v=C9ctoK4M9Bk">This project was made with the help of JS Mastery</a>
+              <br/>
+              <a className={styles.infoText} href="https://www.youtube.com/watch?v=Dn_lRGgTu5k">Background music by CO.AG Music</a>
+              <p>ver 1.0.3</p>
+            </div>
+        </div>
     </div>
   )
 };
 
-export default 
-PageHOC(
-  DevNotes,
-  <>Developer's Notes</>,
-  <>
-    <p className={styles.normalText}>Thank you so much for trying this little passion project out!</p>
-
-    <a className={styles.infoText} href="https://twitter.com/0xgrimredstone">Made with 💛 by 0xgrimredstone</a>
-    <br/>
-    <a className={styles.infoText} href="https://www.youtube.com/watch?v=C9ctoK4M9Bk">This project was made with the help of JS Mastery</a>
-    <br/>
-    <a className={styles.infoText} href="https://www.youtube.com/watch?v=Dn_lRGgTu5k">Background music by CO.AG Music</a>
-    
-  </>
-);
+export default DevNotes

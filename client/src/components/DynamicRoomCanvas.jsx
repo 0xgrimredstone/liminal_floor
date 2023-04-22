@@ -181,6 +181,7 @@ const DynamicRoomCanvas = ({index, ready, choice}) => {
 
   // Mouse-camera movement
   const Rig = () => {
+    console.log("rig should work");
     const { camera, mouse } = useThree();
     return useFrame(() =>
       camera.rotation.set(

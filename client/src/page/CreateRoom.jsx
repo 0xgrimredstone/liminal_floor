@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGlobalContext } from '../context';
 import { CustomButton, PageHOC, GameLoad } from '../components';
 import styles from '../styles';
-import { levels } from '../assets/levels';
+import { levels } from '../assets';
 
 const CreateRoom = () => {
   const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import * as THREE from 'three'
 import { useThree, useFrame } from "@react-three/fiber";
-import { OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import CameraControls from 'camera-controls'
 
 CameraControls.install({ THREE })

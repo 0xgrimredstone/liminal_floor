@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { useGlobalContext } from '../context';
-import { levels } from '../assets/levels';
+import { levels, footstep } from '../assets';
 
 import styles from "../styles";
 import { ActionButton, GameInfo, FadeIn, DynamicRoomCanvas } from '../components';
@@ -82,7 +82,7 @@ const Player1Room = () => {
 
     let calcDepth = Math.abs(goal[0]-pos[0])+Math.abs(goal[1]-pos[1]);
     setDepth(calcDepth);
-
+    console.log(map);
     // check boundary & update accordingly
     if (pos[0] + 1 <= 5){
       if(map[pos[0]+1][pos[1]] != 0) {

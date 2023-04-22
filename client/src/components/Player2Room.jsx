@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { useGlobalContext } from '../context';
-import { levels } from '../assets/levels';
+import {levels, footstep} from '../assets';
 
 import styles from "../styles";
-import { ActionButton, GameInfo, FadeIn, DynamicRoomMap, Loader2 } from '../components';
+import { ActionButton, GameInfo, FadeIn, DynamicRoomMap, Loader2, CustomButton } from '../components';
 import { faRotateRight, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { playAudio } from '../utils/animation.js';
 
@@ -26,13 +26,13 @@ const Player2Room = () => {
   const [isStartingRoom, setStartingRoom] = useState(false);  // determine whether current room is starting room
   // multiplayer synchro
   const [direction, setDirection] = useState([0,0,0,0]); // which directions are activated, ulrd
-  const [directionAll, setDirectionAll] = useState([[0,0,0,0],[0,0,0,0],[0,0,0,0]]); // which directions are activated, ulrd
+  const [directionAll, setDirectionAll] = useState([0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]); // which directions are activated, ulrd
   const [choice, setChoice] = useState(0);  //[x,y,z
   const [isCommitRot, setCommitRot] = useState(false);
   // visuals
   const [isFullyRendered, setFullyRendered] = useState(true);
   // Helper Functions to calculate and gather corresponding values
-  const determineDirection = (v,u,l,r) => {
+  const determineDirection = (v,u) => {
     var result = [0,0,0,0];
     switch(v){
       case 0:
@@ -44,22 +44,22 @@ const Player2Room = () => {
         result = [1,1,1,1];
         break;
       case 3:
-        result = [1,r?1:0,l?1:0,u?1:0];
+        result = [1,u?1:0,u?1:0,u?1:0];
         break;
       case 4:
         result = [1,1,1,u?1:0];
         break;
       case 5:
-        result = [0,r?1:0,1,u?1:0];
+        result = [0,u?1:0,1,0];
         break;
       case 6:
-        result = [0,r?1:0,1,u?1:0];
+        result = [1,0,1,0];
         break;
       case 7:
-        result = [1,r?1:0,l?1:0,u?1:0];
+        result = [1,0,0,u?1:0];
         break;
       case 8:
-        result = [0,r?1:0,1,u?1:0];
+        result = [1,0,0,1];
         break;
       default:
         result = [0,0,0,u?1:0];
@@ -67,23 +67,62 @@ const Player2Room = () => {
     }
     return result;
   }
+  const determineRotation = (v,dir) => {
+    let newDir = [0,0,0,0];
+    switch(v){
+      case 0:
+        if (dir[0] == 1) newDir[0] = 1; // up to up
+        if (dir[1] == 1) newDir[1] = 1; // left to left
+        if (dir[2] == 1) newDir[2] = 1; // right to right
+        if (dir[3] == 1) newDir[3] = 1; // down to down
+        break;
+      case 1:
+        if (dir[0] == 1) newDir[1] = 1; // up to left
+        if (dir[1] == 1) newDir[3] = 1; // left to down
+        if (dir[2] == 1) newDir[0] = 1; // right to up
+        if (dir[3] == 1) newDir[2] = 1; // down to right
+        setChoice(1);
+        break;
+      case 2:
+        if (dir[0] == 1) newDir[3] = 1; // up to down
+        if (dir[1] == 1) newDir[2] = 1; // left to right
+        if (dir[2] == 1) newDir[1] = 1; // right to left
+        if (dir[3] == 1) newDir[0] = 1; // down to up
+        setChoice(2);
+        break;
+      case 3:
+        if (dir[0] == 1) newDir[2] = 1; // up to right
+        if (dir[1] == 1) newDir[0] = 1; // left to up
+        if (dir[2] == 1) newDir[3] = 1; // right to down
+        if (dir[3] == 1) newDir[1] = 1; // down to left
+        setChoice(3);
+        break;
+      default:
+          break;
+    }
+    return newDir;
+  }
   const rotateLeft = () => {
     setChoice(choice+1);
     var newDirection = [0,0,0,0];
-    if (direction[0] == 1) newDirection[1] = 1; // up to left
-    if (direction[1] == 1) newDirection[3] = 1; // left to down
-    if (direction[2] == 1) newDirection[0] = 1; // right to up
-    if (direction[3] == 1) newDirection[2] = 1; // down to right
-    setDirection(newDirection);
+    if (directionAll[4][0] == 1) newDirection[1] = 1; // up to left
+    if (directionAll[4][1] == 1) newDirection[3] = 1; // left to down
+    if (directionAll[4][2] == 1) newDirection[0] = 1; // right to up
+    if (directionAll[4][3] == 1) newDirection[2] = 1; // down to right
+    let newState = [...directionAll];
+    newState[4] = newDirection;
+    setDirectionAll(newState);
   }
   const rotateRight = () => {
     setChoice(choice-1);
     var newDirection = [0,0,0,0];
-    if (direction[0] == 1) newDirection[2] = 1; // up to right
-    if (direction[1] == 1) newDirection[0] = 1; // left to up
-    if (direction[2] == 1) newDirection[3] = 1; // right to down
-    if (direction[3] == 1) newDirection[1] = 1; // down to left
-    setDirection(newDirection);
+    if (directionAll[4][0] == 1) newDirection[2] = 1; // up to right
+    if (directionAll[4][1] == 1) newDirection[0] = 1; // left to up
+    if (directionAll[4][2] == 1) newDirection[3] = 1; // right to down
+    if (directionAll[4][3] == 1) newDirection[1] = 1; // down to left
+    let newState = [...directionAll];
+    newState[4] = newDirection;
+    setDirectionAll(newState);
   }
 
   // fetch player info from contract and set player state
@@ -101,7 +140,7 @@ const Player2Room = () => {
       }
     };
 
-    if (contract && gameData.activeRoom) getPlayerInfo();
+    if (contract && walletAddress && gameData.activeRoom) getPlayerInfo();
   }, [contract, walletAddress, gameData, name]);
 
   // get next round game data and update the room
@@ -111,6 +150,7 @@ const Player2Room = () => {
       // console.log("LOOK AT GAME MOVES "+gameData.activeRoom.moves[1]);
       let map = levels[gameData.activeRoom.level].map;
       let pos = gameData.activeRoom.position;
+      // let rot = levels[gameData.activeRoom.level].rotMap;
       let rot = gameData.activeRoom.gameRotationMap;
       if(!isFullyRendered) setFullyRendered(false); // to load data, hide the room for now
 
@@ -120,54 +160,35 @@ const Player2Room = () => {
       // console.log("initial setup\nlevel = "+gameData.activeRoom.level+"\nroomValue = "+roomValue+"\npos = "+pos+"\nroom value in map = "+map[pos[0]][pos[1]]);
       
       // Determine available directions and perspective based on the current room's rotation
-      let dir = (determineDirection(map[pos[0]][pos[1]]));  // set direction
+      let allDir = [];  // set direction
+      let counter = 0;
       // get direction for all rooms nearby
-      let left = pos[1]-1 > 0 ? determineDirection(map[pos[0]][pos[1]-1],false,true,true): determineDirection(0);
-      let right = pos[1]+1 <= 5 ? determineDirection(map[pos[0]][pos[1]+1],true,false,false,true): determineDirection(0);
-      let up = pos[0]+1 <= 5 ? determineDirection(map[pos[0]+1][pos[1]],true,false,true) : determineDirection(0);
-      setDirectionAll([left, right, up]);
+      console.log(pos);
+      for (let i = -1; i < 2; i++) {
+        for (let j = -1; j < 2; j++) {
+          let x = pos[0]+i;
+          let y = pos[1]+j;
+          console.log(counter+": "+x+" "+y+"");
+          if (x < 0 || x > 5 || y < 0 || y > 5) 
+            allDir.push(determineDirection(0));
+          else {
+            let temp = (counter == 2 ? false : true);
+            console.log("direction for "+map[x][y]+" at "+x+" "+y+" w temp "+temp+" = "+determineDirection(map[x][y],temp));
+            console.log("rotation for "+rot[x][y]+" at "+x+" "+y+" = "+determineRotation(rot[x][y], determineDirection(map[x][y],temp)));
+            allDir.push(determineRotation(rot[x][y], determineDirection(map[x][y],temp)));
+            console.log(counter+": "+allDir[counter]);
+          }
+          counter++;
+        }
+      }
+      setDirectionAll(allDir);
       
       // console.log("determine if new game?\nrotation value: "+rot[pos[0]][pos[1]]+"\nrecorded roomValue: "+roomValue+" != "+(map[pos[0]][pos[1]])+"\ndirection determined: "+dir);
-      // if game just started or game is continuing
-      if (rot[pos[0]][pos[1]] == 0 && roomValue != map[pos[0]][pos[1]] && roomValue != 0){
-        console.log("it was a prev game");
-        setChoice(0); // reset choice
-      }
-      else {
-        console.log("it was a new game");
-        // set committed direction
-        var newDir = [0,0,0,0];
-        switch(rot[pos[0]][pos[1]]){
-          case 1:
-            if (dir[0] == 1) newDir[1] = 1; // up to left
-            if (dir[1] == 1) newDir[3] = 1; // left to down
-            if (dir[2] == 1) newDir[0] = 1; // right to up
-            if (dir[3] == 1) newDir[2] = 1; // down to right
-            setChoice(1);
-            break;
-          case 2:
-            if (dir[0] == 1) newDir[3] = 1; // up to down
-            if (dir[1] == 1) newDir[2] = 1; // left to right
-            if (dir[2] == 1) newDir[1] = 1; // right to left
-            if (dir[3] == 1) newDir[0] = 1; // down to up
-            setChoice(2);
-            break;
-          case 3:
-            if (dir[0] == 1) newDir[2] = 1; // up to right
-            if (dir[1] == 1) newDir[0] = 1; // left to up
-            if (dir[2] == 1) newDir[3] = 1; // right to down
-            if (dir[3] == 1) newDir[1] = 1; // down to left
-            setChoice(3);
-            break;
-          default:
-              break;
-        }
-        if (!(newDir[0] == 0 && newDir[1] == 0 && newDir[2] == 0 && newDir[3] == 0)) dir = newDir;  // if newDir is not [0,0,0,0]
-        // console.log("rotationMap pos: "+rot[pos[0]][pos[1]]+" choice: "+choice+" direction: "+dir);
-      }
+      // console.log("rotationMap pos: "+rot[pos[0]][pos[1]]+" choice: "+choice+" direction: "+dir);
+      
 
       setRoomValue(map[pos[0]][pos[1]]);  // set room value
-      setDirection(dir);
+      setDirection(allDir[4]);
       if (pos[0] == levels[gameData.activeRoom.level].start[0] && pos[1] == levels[gameData.activeRoom.level].start[1])
         setStartingRoom(true);
 
@@ -179,8 +200,12 @@ const Player2Room = () => {
   const commitRotationClick = async () => {
     // check if player not trapped
     // direction [up, left, right, down]
-    // directionAll [left, right, up]
-    let isPlayerNotStuck = direction[0] && directionAll[2][3] || direction[1] && directionAll[0][2] || direction[2] && directionAll[1][1];
+    // directionAll [up, left, right]
+    let isPlayerNotStuck = 
+      directionAll[4][0] == 1 && directionAll[3][3] == 1 || 
+      directionAll[4][1] == 1 && directionAll[1][2] == 1 || 
+      directionAll[4][2] == 1 && directionAll[7][1] == 1 || 
+      directionAll[4][3] == 1 && directionAll[5][0] == 1;
     if (!isPlayerNotStuck) {
       setShowAlert({
           status: true,
@@ -218,7 +243,15 @@ const Player2Room = () => {
     <section className={`${styles.flexBetween} ${styles.gameContainer} relative w-full h-screen mx-auto bg-siteblack`}>
       <FadeIn show={isFullyRendered}>
 
-        <DynamicRoomMap index={roomValue} directionAll={directionAll} ready={isFullyRendered} choice={choice} direction={direction}/>
+        <DynamicRoomMap 
+          wholeMap = {levels[gameData.activeRoom.level].map} 
+          P1Position = {gameData.activeRoom.position} 
+          // commitedRot = {levels[gameData.activeRoom.level].rotMap} 
+          commitedRot = {gameData.activeRoom.gameRotationMap} 
+          rotChoice = {choice}
+          direction = {direction}
+          directionAll = {directionAll}
+        />
         
         {isCommitRot ? (
           <div className={`${styles.flexCenter} flex-col m-20`}>
@@ -231,12 +264,12 @@ const Player2Room = () => {
             <div className="flex items-center flex-row">
               <ActionButton
                 imgUrl={faRotateLeft}
-                commitRotationClick={rotateLeft}
+                handleClick={rotateLeft}
                 restStyles={`mr-10  hover:border-[#7c4353]`}
               />
               <ActionButton
                 imgUrl={faRotateRight}
-                commitRotationClick={rotateRight}
+                handleClick={rotateRight}
                 restStyles={`ml-10  hover:border-[#7c4353]`}
               />
             </div>

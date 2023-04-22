@@ -27,7 +27,7 @@ const GameOver = ({type}) => {
               <CustomButton
                 title="Back to home"
                 handleClick={() => {
-                  navigate('/create-room');
+                  navigate('/create-room', { replace: true });
                   setDepth(0);
                 }}
                 restStyles="mt-6"

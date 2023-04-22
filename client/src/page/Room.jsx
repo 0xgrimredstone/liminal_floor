@@ -14,7 +14,7 @@ const Room = () => {
   } = useGlobalContext();
 
   const [isPlayer, setIsPlayer] = useState(0);
-  const [isMultiplayer, setIsMultiplayer] = useState(false);
+  const [currPlayer, setCurrPlayer] = useState(<Player1Room />);
 
   // fetch player info from contract and set player state
   useEffect(() => {
@@ -22,37 +22,30 @@ const Room = () => {
       try {
         if (gameData.activeRoom.players[0].toLowerCase() === walletAddress.toLowerCase()) {
           setIsPlayer(1);
-          if (gameData.activeRoom.players[1].toLowerCase() === '0x0000000000000000000000000000000000000000') {
-            setIsMultiplayer(false)
-          }
-          else {
-            setIsMultiplayer(true);
-          }
+          if (gameData.activeRoom.players[1].toLowerCase() !== '0x0000000000000000000000000000000000000000') 
+            setCurrPlayer(<Player1w2Room />);
         }
         else if (gameData.activeRoom.players[1].toLowerCase() === walletAddress.toLowerCase()) {
           setIsPlayer(2);
+          setCurrPlayer(<Player2Room />);
         }
       } catch (error) {
         console.log(error);
         setErrorMessage(error.message);
       }
     };
-    if (contract && gameData.activeRoom) getPlayerInfo();
-  }, [contract, walletAddress, gameData]);
+    if (contract && walletAddress && gameData.activeRoom) getPlayerInfo();
+  }, [contract, walletAddress, gameData.activeRoom]);
 
   return (
     <>
       {showAlert?.status && <Alert type={showAlert.type} message={showAlert.message} />}
-      {isPlayer === 1 ? 
-        isMultiplayer
-          ? <Player1w2Room />
-          : <Player1Room /> 
-        : isPlayer === 2
-          ? <Player2Room />
-          : <section className={`${styles.flexCenter} ${styles.gameContainer} relative w-full h-screen mx-auto bg-siteblack`}>
-              <Loader2/>
-              <p className={styles.gameLoadText} >Taking a while? Make sure you're in the right floor</p>
-            </section>
+      {isPlayer !== 0
+        ? currPlayer
+        : <section className={`${styles.flexCenter} ${styles.gameContainer} relative w-full h-screen mx-auto bg-siteblack`}>
+            <Loader2/>
+            <p className={styles.gameLoadText} >Taking a while? Make sure you're in the right floor</p>
+          </section>
       }
     </>
   );

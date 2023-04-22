@@ -1,10 +1,9 @@
-import React, {useState} from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-
 
 import Alert from './Alert';
 import { useGlobalContext } from '../context';
-import { logo, launchImg } from '../assets';
+import { logo } from '../assets';
 import styles from '../styles';
 
 const PageHOC = (Component, title, desc) => () => {
@@ -23,7 +22,7 @@ const PageHOC = (Component, title, desc) => () => {
                 <p className={`${styles.normalText} my-10`}>{desc}</p>
                 <Component/>
             </div>
-            <p className={styles.footerText}>ver 1.0.2 | <a className={styles.infoText} onClick={()=> navigate('/dev')}>Developer's Notes</a></p>
+            <p className={styles.footerText}>ver 1.0.3 | <a className={styles.infoText} onClick={()=> navigate('/dev')}>Developer's Notes</a></p>
         </div>
     </div>
   );
